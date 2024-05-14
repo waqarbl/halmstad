@@ -29,6 +29,10 @@ class _MeetingsPageState extends State<MeetingsPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SegmentedButton<PageType>(
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10))),
+                ),
                 showSelectedIcon: false,
                 segments: const <ButtonSegment<PageType>>[
                   ButtonSegment<PageType>(

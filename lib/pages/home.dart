@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:halmstad/constants/colors.dart';
 import 'actions_page.dart';
 import 'meetings_page.dart';
 import 'requests_page.dart';
 import 'interactions_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -15,6 +17,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
+
+  final assetsList = [
+    'assets/interaction.svg',
+    'assets/meeting.svg',
+    'assets/requestIcon.svg',
+    'assets/actionIcon.svg',
+  ];
 
   final List _pages = [
     const InteractionsPage(),
@@ -33,33 +42,61 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: _pages[selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: selectedIndex,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: const Color(0xFF6200EE),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white.withOpacity(.60),
-          selectedFontSize: 14,
-          unselectedFontSize: 14,
-          onTap: (index) => _changeTab(index),
-          items: const [
-            BottomNavigationBarItem(
-              label: 'Interactions',
-              icon: Icon(Icons.favorite),
-            ),
-            BottomNavigationBarItem(
-              label: 'Meetings',
-              icon: Icon(Icons.music_note),
-            ),
-            BottomNavigationBarItem(
-              label: 'Requests',
-              icon: Icon(Icons.location_on),
-            ),
-            BottomNavigationBarItem(
-              label: 'Actions',
-              icon: Icon(Icons.library_books),
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black,
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: const Color(0xFFFFFFFF),
+            selectedItemColor: Color(0xFF00206A),
+            unselectedItemColor: Colors.grey,
+            selectedFontSize: 15,
+            unselectedFontSize: 14,
+            onTap: (index) => _changeTab(index),
+            items: [
+              BottomNavigationBarItem(
+                activeIcon: SvgPicture.asset(
+                  assetsList[0],
+                  colorFilter: ColorFilter.mode(bluePrimary, BlendMode.srcIn),
+                ),
+                label: 'Interactions',
+                icon: SvgPicture.asset(
+                  assetsList[0],
+                ),
+              ),
+              BottomNavigationBarItem(
+                activeIcon: SvgPicture.asset(
+                  assetsList[1],
+                  colorFilter: ColorFilter.mode(bluePrimary, BlendMode.srcIn),
+                ),
+                label: 'Meetings',
+                icon: SvgPicture.asset(assetsList[1]),
+              ),
+              BottomNavigationBarItem(
+                activeIcon: SvgPicture.asset(
+                  assetsList[2],
+                  colorFilter: ColorFilter.mode(bluePrimary, BlendMode.srcIn),
+                ),
+                label: 'Requests',
+                icon: SvgPicture.asset(assetsList[2]),
+              ),
+              BottomNavigationBarItem(
+                activeIcon: SvgPicture.asset(
+                  assetsList[3],
+                  colorFilter: ColorFilter.mode(bluePrimary, BlendMode.srcIn),
+                ),
+                label: 'Actions',
+                icon: SvgPicture.asset(assetsList[3]),
+              ),
+            ],
+          ),
         ));
   }
 }
