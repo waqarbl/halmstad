@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:halmstad/pages/home.dart';
-import 'package:halmstad/pages/login.dart';
+import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/pages/authentication/home.dart';
+import 'package:halmstad/pages/authentication/login.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -17,6 +18,7 @@ class SplashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     moveToLogin(context);
     return Scaffold(
+      backgroundColor: bluePrimary,
       body: SizedBox(
         width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height,
@@ -27,7 +29,10 @@ class SplashPage extends StatelessWidget {
                     builder: (context) => const HomePage(),
                   ));
                 },
-                child: Image.asset('assets/splash.png'))),
+                child: Container(
+                    width: 260,
+                    height: 130,
+                    child: Image.asset('assets/halmstadLogo.png')))),
       ),
     );
   }

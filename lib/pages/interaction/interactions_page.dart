@@ -1,14 +1,11 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:get/get.dart';
-import 'package:halmstad/pages/add_interaction.dart';
-import 'package:halmstad/pages/interactionDetailPage.dart';
+import 'package:halmstad/pages/interaction/add_interaction.dart';
+import 'package:halmstad/pages/interaction/interactionDetailPage.dart';
 import 'package:halmstad/widgets/reusables.dart';
-import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 enum PageType { today, calendar }
 
@@ -21,15 +18,15 @@ class InteractionsPage extends StatefulWidget {
 
 class _InteractionsPageState extends State<InteractionsPage> {
   PageType selectedPage = PageType.today;
-  DateTime selectedDate = DateTime.now();
+  // DateTime selectedDate = DateTime.now();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
-          shape: OvalBorder(),
+          shape: const OvalBorder(),
           backgroundColor: const Color.fromARGB(255, 1, 3, 90),
           onPressed: () {
-            Get.to(() => AddInteraction());
+            Get.to(() => const AddInteraction());
             // print('floating action button pressed');
           },
           child: const Icon(
@@ -37,62 +34,6 @@ class _InteractionsPageState extends State<InteractionsPage> {
             color: Colors.white,
           ),
         ),
-        // drawer: Drawer(
-        //   child: Column(
-        //     children: [
-        //       const UserAccountsDrawerHeader(
-        //         accountName: Text('John Doe'),
-        //         accountEmail: Text('user@example.com'),
-        //         currentAccountPicture: CircleAvatar(
-        //           backgroundColor: Colors.lime,
-        //         ),
-        //       ),
-        //       const ListTile(
-        //         leading: Icon(Icons.access_alarm),
-        //         title: Text('Interaction Details'),
-        //         trailing: Icon(Icons.arrow_forward_ios_rounded),
-        //       ),
-        //       const Divider(),
-        //       const ListTile(
-        //         leading: Icon(Icons.access_alarm),
-        //         title: Text('Interaction Details'),
-        //         trailing: Icon(Icons.arrow_forward_ios_rounded),
-        //       ),
-        //       const Divider(),
-        //       const ListTile(
-        //         leading: Icon(Icons.access_alarm),
-        //         title: Text('Interaction Details'),
-        //         trailing: Icon(Icons.arrow_forward_ios_rounded),
-        //       ),
-        //       const Divider(),
-        //       const ListTile(
-        //         leading: Icon(Icons.access_alarm),
-        //         title: Text('Interaction Details'),
-        //         trailing: Icon(Icons.arrow_forward_ios_rounded),
-        //       ),
-        //       const Divider(),
-        //       const Spacer(),
-        //       ElevatedButton(
-        //         onPressed: () {},
-        //         style: ElevatedButton.styleFrom(
-        //           maximumSize: const Size(200, 50),
-        //           minimumSize: const Size(200, 50),
-        //           backgroundColor: const Color.fromARGB(255, 1, 3, 90),
-        //           shape: RoundedRectangleBorder(
-        //             borderRadius: BorderRadius.circular(7), // button's shape
-        //           ),
-        //         ),
-        //         child: const Text(
-        //           'Logout',
-        //           style: TextStyle(color: Colors.white),
-        //         ),
-        //       ),
-        //       const SizedBox(
-        //         height: 30,
-        //       )
-        //     ],
-        //   ),
-        // ),
         appBar: AppBar(
           backgroundColor: bluePrimary,
           title: const Text(
@@ -156,7 +97,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
                   },
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               selectedPage == PageType.today
@@ -170,14 +111,14 @@ class _InteractionsPageState extends State<InteractionsPage> {
   _getTodayPageView(BuildContext context) {
     return Container(
       height: Get.size.height / 1.34,
-      padding: EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 10),
       child: ListView.builder(
         shrinkWrap: true,
         itemCount: 4,
         itemBuilder: (context, index) {
           return Container(child: InteractionItem(
             onTap: () {
-              Get.to(() => InteractionDetailPage());
+              Get.to(() => const InteractionDetailPage());
             },
           ));
         },
@@ -186,7 +127,11 @@ class _InteractionsPageState extends State<InteractionsPage> {
   }
 
   DateTime _selectedDay = DateTime.now();
+  // ignore: unused_field
   DateTime _focusedDay = DateTime.now();
+
+  DateTime? weekStartDay;
+  DateTime? weekEndDay;
 
   _getCalendarPageView(BuildContext context) {
     List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
@@ -195,7 +140,8 @@ class _InteractionsPageState extends State<InteractionsPage> {
         shrinkWrap: true,
         children: [
           TableCalendar(
-              currentDay: DateTime.now(),
+              calendarFormat: CalendarFormat.week,
+              currentDay: _selectedDay,
               selectedDayPredicate: (day) {
                 return isSameDay(_selectedDay, day);
               },
@@ -208,12 +154,32 @@ class _InteractionsPageState extends State<InteractionsPage> {
               eventLoader: (day) {
                 return eventList.where((date) => isSameDay(date, day)).toList();
               },
-              headerStyle:
-                  HeaderStyle(formatButtonVisible: false, titleCentered: true),
-              focusedDay: selectedDate,
-              firstDay: DateTime.now().subtract(Duration(days: 365)),
-              lastDay: DateTime.now().add(Duration(days: 365))),
-          SizedBox(
+              onPageChanged: (focusedDay) {},
+              calendarBuilders: CalendarBuilders(
+                headerTitleBuilder: (context, day) {
+                  final firstDay = day.subtract(Duration(days: day.weekday));
+                  final lastDay = firstDay.add(Duration(days: 6));
+                  final formattedDateRange =
+                      "${firstDay.day}  ${DateFormat('MMM').format(firstDay)} ${firstDay.year == lastDay.year ? '' : firstDay.year} - ${lastDay.day}  ${DateFormat('MMM').format(lastDay)} ${lastDay.year}";
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        formattedDateRange,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  );
+                },
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+              ),
+              focusedDay: _selectedDay,
+              firstDay: DateTime.now().subtract(const Duration(days: 365)),
+              lastDay: DateTime.now().add(const Duration(days: 365))),
+          const SizedBox(
             height: 20,
           ),
 
@@ -225,7 +191,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
               itemBuilder: (context, index) {
                 return InteractionItem(
                   onTap: () {
-                    Get.to(() => InteractionDetailPage());
+                    Get.to(() => const InteractionDetailPage());
                   },
                 );
               },

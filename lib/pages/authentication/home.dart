@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:halmstad/constants/colors.dart';
-import 'actions_page.dart';
-import 'meetings_page.dart';
-import 'requests_page.dart';
-import 'interactions_page.dart';
+import '../action/actions_page.dart';
+import '../meeting/meetings_page.dart';
+import '../request/requests_page.dart';
+import '../interaction/interactions_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
