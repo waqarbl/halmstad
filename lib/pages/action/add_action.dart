@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:google_places_autocomplete_text_field/google_places_autocomplete_text_field.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
@@ -45,6 +46,8 @@ class _AddActionState extends State<AddAction> {
 
   String selectedFocusArea = 'School';
 
+  TextEditingController placesController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,6 +70,29 @@ class _AddActionState extends State<AddAction> {
             const SizedBox(
               height: 10,
             ),
+            // GooglePlacesAutoCompleteTextFormField(
+            //     textEditingController: placesController,
+            //     googleAPIKey: "AIzaSyAp3uRjDh2iqb_ZqMrN995lzvHn_39P16g",
+            //     // proxyURL:
+            //     //     "https://your-proxy.com/", // only needed if you build for the web
+            //     debounceTime: 400, // defaults to 600 ms
+            //     countries: [], // optional, by default the list is empty (no restrictions)
+            //     isLatLngRequired:
+            //         true, // if you require the coordinates from the place details
+
+            //     getPlaceDetailWithLatLng: (prediction) {
+            //       // this method will return latlng with place detail
+            //       print("Coordinates: (${prediction.lat},${prediction.lng})");
+
+            //       print(prediction.placeId);
+            //       // print(prediction.)
+            //     }, // this callback is called when isLatLngRequired is true
+
+            //     itmClick: (prediction) {
+            //       placesController.text = prediction.description!;
+            //       placesController.selection = TextSelection.fromPosition(
+            //           TextPosition(offset: prediction.description!.length));
+            //     }),
             Text(
               'Action Date and Time',
               style: textStyle16600.copyWith(color: bluePrimary),

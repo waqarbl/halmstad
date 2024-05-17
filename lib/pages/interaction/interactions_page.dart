@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:get/get.dart';
+import 'package:halmstad/models/interactionModel.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/pages/interaction/add_interaction.dart';
 import 'package:halmstad/pages/interaction/interactionDetailPage.dart';
 import 'package:halmstad/widgets/reusables.dart';
@@ -17,6 +19,46 @@ class InteractionsPage extends StatefulWidget {
 }
 
 class _InteractionsPageState extends State<InteractionsPage> {
+  final networkCalls = NetworkCalls();
+
+  InteractionModel? interactionModel;
+  InteractionModel? calendarInteractionModel;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    getInteractionsForPage();
+  }
+
+  getInteractionsForPage() async {
+    isLoading = true;
+    setState(() {});
+    final response = await networkCalls.getInteractions();
+    if (!response.contains('Error:')) {
+      interactionModel = interactionModelFromJson(response);
+      setState(() {});
+    }
+    isLoading = false;
+    setState(() {});
+  }
+
+  // getInteractionsForCalendar()async{
+  //    isLoading = true;
+  //   setState(() {});
+  //   final response = await networkCalls.getInteractions();
+  //   if (!response.contains('Error:')) {
+  //     interactionModel = interactionModelFromJson(response);
+  //     setState(() {});
+  //   }
+  //   isLoading = false;
+  //   setState(() {});
+  // }
+
+  List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
+
   PageType selectedPage = PageType.today;
   // DateTime selectedDate = DateTime.now();
   @override
@@ -43,9 +85,9 @@ class _InteractionsPageState extends State<InteractionsPage> {
         ),
         body: SafeArea(
             child: Container(
-          margin: const EdgeInsets.only(top: 20),
-          // width: double.maxFinite,
-          // height: Get.size.height,
+          margin: const EdgeInsets.only(top: 20, bottom: 20),
+          width: Get.size.width,
+          height: Get.size.height,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -100,9 +142,70 @@ class _InteractionsPageState extends State<InteractionsPage> {
               const SizedBox(
                 height: 10,
               ),
-              selectedPage == PageType.today
-                  ? _getTodayPageView(context)
-                  : _getCalendarPageView(context)
+              selectedPage == PageType.calendar
+                  ? TableCalendar(
+                      calendarFormat: CalendarFormat.week,
+                      currentDay: _selectedDay,
+                      selectedDayPredicate: (day) {
+                        return isSameDay(_selectedDay, day);
+                      },
+                      onDaySelected: (selectedDay, focusedDay) {
+                        setState(() {
+                          _selectedDay = selectedDay;
+                          _focusedDay =
+                              focusedDay; // update `_focusedDay` here as well
+                        });
+                      },
+                      eventLoader: (day) {
+                        return eventList
+                            .where((date) => isSameDay(date, day))
+                            .toList();
+                      },
+                      onPageChanged: (focusedDay) {},
+                      calendarBuilders: CalendarBuilders(
+                        headerTitleBuilder: (context, day) {
+                          final firstDay =
+                              day.subtract(Duration(days: day.weekday));
+                          final lastDay = firstDay.add(Duration(days: 6));
+                          final formattedDateRange =
+                              "${firstDay.day}  ${DateFormat('MMM').format(firstDay)} ${firstDay.year == lastDay.year ? '' : firstDay.year} - ${lastDay.day}  ${DateFormat('MMM').format(lastDay)} ${lastDay.year}";
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                formattedDateRange,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      headerStyle: HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                      ),
+                      focusedDay: _selectedDay,
+                      firstDay:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDay: DateTime.now().add(const Duration(days: 365)))
+                  : Container(),
+              selectedPage == PageType.calendar
+                  ? const SizedBox(
+                      height: 20,
+                    )
+                  : Container(),
+              if (isLoading) ...[
+                Container(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              ] else ...[
+                Expanded(
+                    child: selectedPage == PageType.today
+                        ? _getTodayPageView(context)
+                        : _getCalendarPageView(context)),
+              ],
             ],
           ),
         )));
@@ -110,15 +213,18 @@ class _InteractionsPageState extends State<InteractionsPage> {
 
   _getTodayPageView(BuildContext context) {
     return Container(
-      height: Get.size.height / 1.34,
       padding: const EdgeInsets.only(bottom: 10),
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: 4,
+        itemCount: interactionModel!.data?.length,
         itemBuilder: (context, index) {
-          return Container(child: InteractionItem(
+          return Container(
+              child: InteractionItem(
+            interaction: interactionModel!.data![index],
             onTap: () {
-              Get.to(() => const InteractionDetailPage());
+              Get.to(() => InteractionDetailPage(
+                    interaction: interactionModel!.data![index],
+                  ));
             },
           ));
         },
@@ -134,64 +240,21 @@ class _InteractionsPageState extends State<InteractionsPage> {
   DateTime? weekEndDay;
 
   _getCalendarPageView(BuildContext context) {
-    List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
     return Container(
       child: ListView(
         shrinkWrap: true,
         children: [
-          TableCalendar(
-              calendarFormat: CalendarFormat.week,
-              currentDay: _selectedDay,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay; // update `_focusedDay` here as well
-                });
-              },
-              eventLoader: (day) {
-                return eventList.where((date) => isSameDay(date, day)).toList();
-              },
-              onPageChanged: (focusedDay) {},
-              calendarBuilders: CalendarBuilders(
-                headerTitleBuilder: (context, day) {
-                  final firstDay = day.subtract(Duration(days: day.weekday));
-                  final lastDay = firstDay.add(Duration(days: 6));
-                  final formattedDateRange =
-                      "${firstDay.day}  ${DateFormat('MMM').format(firstDay)} ${firstDay.year == lastDay.year ? '' : firstDay.year} - ${lastDay.day}  ${DateFormat('MMM').format(lastDay)} ${lastDay.year}";
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        formattedDateRange,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  );
-                },
-              ),
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-              ),
-              focusedDay: _selectedDay,
-              firstDay: DateTime.now().subtract(const Duration(days: 365)),
-              lastDay: DateTime.now().add(const Duration(days: 365))),
-          const SizedBox(
-            height: 20,
-          ),
-
           Container(
-            height: Get.size.width / 1.32,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: 4,
+              itemCount: interactionModel!.data?.length,
               itemBuilder: (context, index) {
                 return InteractionItem(
+                  interaction: interactionModel!.data![index],
                   onTap: () {
-                    Get.to(() => const InteractionDetailPage());
+                    Get.to(() => InteractionDetailPage(
+                          interaction: interactionModel!.data![index],
+                        ));
                   },
                 );
               },

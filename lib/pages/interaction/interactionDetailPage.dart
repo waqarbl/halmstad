@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/models/interactionModel.dart';
 import 'package:halmstad/widgets/reusables.dart';
+import 'package:intl/intl.dart';
 
 class InteractionDetailPage extends StatelessWidget {
-  const InteractionDetailPage({super.key});
+  final Interaction interaction;
+  InteractionDetailPage({super.key, required this.interaction});
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +38,14 @@ class InteractionDetailPage extends StatelessWidget {
             SizedBox(
               height: 12,
             ),
-            TextRow(text1: 'Dated: ', text2: '22 Mar 2024'),
+            TextRow(
+                text1: 'Dated: ',
+                text2: DateFormat('dd MMM yyyy')
+                    .format(interaction.activityTime!)),
             SizedBox(
               height: 12,
             ),
-            TextRow(text1: 'Time: ', text2: '4:22 PM'),
+            TextRow(text1: 'Time: ', text2: '4:22 PM not in response'),
             SizedBox(
               height: 12,
             ),
@@ -54,7 +60,7 @@ class InteractionDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.45,
                     child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                      interaction.location!.address!,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -70,7 +76,7 @@ class InteractionDetailPage extends StatelessWidget {
               height: 12,
             ),
             Text(
-              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+              'Not in response :: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
               style: textStyle14500.copyWith(color: greytextColor),
             ),
             SizedBox(
@@ -83,11 +89,13 @@ class InteractionDetailPage extends StatelessWidget {
             SizedBox(
               height: 12,
             ),
-            TextRow(text1: 'Focus Area: ', text2: 'Area Name'),
+            TextRow(
+                text1: 'Focus Area: ', text2: interaction.focusArea!.title!),
             SizedBox(
               height: 12,
             ),
-            TextRow(text1: 'Type: ', text2: 'Area Type'),
+            TextRow(
+                text1: 'Type: ', text2: interaction.location!.locationType!),
             SizedBox(
               height: 12,
             ),
@@ -102,7 +110,7 @@ class InteractionDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.45,
                     child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                      interaction.location!.address!,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -113,12 +121,14 @@ class InteractionDetailPage extends StatelessWidget {
             SizedBox(
               height: 12,
             ),
-            TextRow(text1: 'Follow up: ', text2: 'Follow up input'),
+            TextRow(
+                text1: 'Follow up: ',
+                text2: 'Not in response:: Follow up input'),
             SizedBox(
               height: 12,
             ),
             Text(
-              'Attachments:  ',
+              'Attachments:  not in response ',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             Row(
@@ -172,7 +182,7 @@ class InteractionDetailPage extends StatelessWidget {
                   ),
                   Container(
                     child: Text(
-                      '5',
+                      interaction.group!.members!.length.toString(),
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
                   ),
@@ -182,8 +192,16 @@ class InteractionDetailPage extends StatelessWidget {
             SizedBox(
               height: 12,
             ),
-            MemberItem(),
-            MemberItem(),
+            ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: interaction.group!.members!.length,
+              itemBuilder: (context, index) {
+                return MemberItem(
+                  member: interaction.group!.members![index],
+                );
+              },
+            ),
           ],
         ),
       ),

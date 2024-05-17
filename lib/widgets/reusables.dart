@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/models/interactionModel.dart';
+import 'package:intl/intl.dart';
 
 // ignore: must_be_immutable
 class InteractionItem extends StatelessWidget {
-  InteractionItem({super.key, this.onTap});
+  Interaction interaction;
+  InteractionItem({super.key, this.onTap, required this.interaction});
 
   VoidCallback? onTap;
 
@@ -48,7 +51,8 @@ class InteractionItem extends StatelessWidget {
                   children: [
                     const Text('Dated: ', style: textStyle14500),
                     Text(
-                      '22 Mar 2024',
+                      DateFormat('dd MMM yyyy')
+                          .format(interaction.activityTime!),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -60,7 +64,7 @@ class InteractionItem extends StatelessWidget {
                   children: [
                     const Text('Focus Area: ', style: textStyle14500),
                     Text(
-                      'Area Name  (Area Type)',
+                      interaction.focusArea!.title!,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -76,7 +80,7 @@ class InteractionItem extends StatelessWidget {
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                     Text(
-                      '5',
+                      interaction.group!.members!.length.toString(),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -96,7 +100,7 @@ class InteractionItem extends StatelessWidget {
                       Container(
                         width: Get.size.width / 1.45,
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                          'interaction.',
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),
@@ -245,7 +249,8 @@ class MeetingItem extends StatelessWidget {
 }
 
 class MemberItem extends StatelessWidget {
-  const MemberItem({super.key});
+  final Member member;
+  const MemberItem({super.key, required this.member});
 
   @override
   Widget build(BuildContext context) {
@@ -259,14 +264,14 @@ class MemberItem extends StatelessWidget {
                   BorderSide(color: greytextColor.withOpacity(0.4), width: 2))),
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
               CircleAvatar(),
               SizedBox(
                 width: 10,
               ),
               Column(
-                children: [Text('Member Name'), Text('26 years')],
+                children: [Text('Member Name'), Text('${member.age} years')],
               )
             ],
           ),
