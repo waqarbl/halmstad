@@ -1,16 +1,22 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
+import 'package:halmstad/controllers/local_storage.dart';
+import 'package:halmstad/network/api_urls.dart';
 import 'package:http/http.dart' as http;
 
 class NetworkCalls {
-  String baseUrl = 'http://192.168.18.103:3000/api/';
-
-  String interactinonsUrl = 'todayInteractions';
+  String interactinonsUrl = 'interactions/today';
   String meetingsUrl = '';
   String requestsUrl = '';
   String actionsUrl = '';
 
   Future<String> getInteractions() async {
-    final response = await http.get(Uri.parse('$baseUrl$interactinonsUrl'));
+    final token = await LocalStorage().getToken();
+    final response =
+        await http.get(Uri.parse('$baseUrl$interactinonsUrl'), headers: {
+      'Authorization': 'Bearer $token',
+    });
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
@@ -54,6 +60,38 @@ class NetworkCalls {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
       print(response.body);
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  Future<String> registerUser(var body) async {
+    final response = await http.post(
+        Uri.parse(
+          '$baseUrl$registerUrl',
+        ),
+        body: jsonEncode(body));
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      print('success');
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  Future<String> loginUser(var body) async {
+    final response = await http.post(
+        Uri.parse(
+          '$baseUrl$loginUrl',
+        ),
+        body: jsonEncode(body));
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      print('success');
       return response.body;
     } else {
       Get.rawSnackbar(message: response.reasonPhrase);

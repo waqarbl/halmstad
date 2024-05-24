@@ -156,8 +156,8 @@ class MeetingDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const MemberItem(),
-            const MemberItem(),
+            // const MemberItem(),
+            // const MemberItem(),
           ],
         ),
       ),

@@ -136,6 +136,9 @@ class _AddMeetingState extends State<AddMeeting> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Enter Your Detailed Address')),
                   const SizedBox(
@@ -200,6 +203,9 @@ class _AddMeetingState extends State<AddMeeting> {
                       height: 100,
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Write Important Notes Here')),
                 ],
@@ -223,6 +229,9 @@ class _AddMeetingState extends State<AddMeeting> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Attachment Document (if any)')),
                   const SizedBox(
@@ -265,6 +274,9 @@ class _AddMeetingState extends State<AddMeeting> {
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
+                                      onChange: (value) {
+                                        //handle change
+                                      },
                                       controller: TextEditingController(),
                                       hintText: 'Enter Your Name')),
                               const SizedBox(
@@ -331,6 +343,9 @@ class _AddMeetingState extends State<AddMeeting> {
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
+                                      onChange: (value) {
+                                        //handle change
+                                      },
                                       controller: TextEditingController(),
                                       hintText: 'Enter Your Ethnicity')),
                               const SizedBox(

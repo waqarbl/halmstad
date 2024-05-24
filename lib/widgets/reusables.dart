@@ -288,7 +288,7 @@ class MemberItem extends StatelessWidget {
                 ),
                 Container(
                   child: Text(
-                    'Asian',
+                    'member.',
                     style: textStyle14500.copyWith(color: greytextColor),
                   ),
                 ),
@@ -327,11 +327,13 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final bool hasMargin;
   String? Function(String?)? validator;
+  ValueChanged<String>? onChange;
 
   CustomTextField({
     super.key,
     required this.controller,
     required this.hintText,
+    required this.onChange,
     this.hasMargin = true,
     this.validator,
   });
@@ -352,6 +354,7 @@ class CustomTextField extends StatelessWidget {
         maxLines: 20,
         controller: controller,
         style: textStyle14500,
+        onChanged: onChange,
         validator: validator,
         decoration: InputDecoration(
             border: InputBorder.none,

@@ -45,17 +45,17 @@ class _InteractionsPageState extends State<InteractionsPage> {
     setState(() {});
   }
 
-  // getInteractionsForCalendar()async{
-  //    isLoading = true;
-  //   setState(() {});
-  //   final response = await networkCalls.getInteractions();
-  //   if (!response.contains('Error:')) {
-  //     interactionModel = interactionModelFromJson(response);
-  //     setState(() {});
-  //   }
-  //   isLoading = false;
-  //   setState(() {});
-  // }
+  getInteractionsForCalendar() async {
+    isLoading = true;
+    setState(() {});
+    final response = await networkCalls.getInteractions();
+    if (!response.contains('Error:')) {
+      interactionModel = interactionModelFromJson(response);
+      setState(() {});
+    }
+    isLoading = false;
+    setState(() {});
+  }
 
   List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
 
@@ -216,7 +216,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
       padding: const EdgeInsets.only(bottom: 10),
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: interactionModel!.data?.length,
+        itemCount: interactionModel?.data?.length,
         itemBuilder: (context, index) {
           return Container(
               child: InteractionItem(

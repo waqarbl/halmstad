@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/my_app_controller.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -16,9 +17,16 @@ class AddInteraction extends StatefulWidget {
 class _AddInteractionState extends State<AddInteraction> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+    resetValues();
+  }
+
+  final myAppController = Get.find<MyAppController>();
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
@@ -26,12 +34,12 @@ class _AddInteractionState extends State<AddInteraction> {
   String address = '';
 
   List peopleList = [];
-  var categoryItems = [
-    'Substance Abuse',
-    'Violence',
-    'Mental Health',
-  ];
-  String categorySelectedValue = 'Substance Abuse';
+  // var categoryItems = [
+  //   'Substance Abuse',
+  //   'Violence',
+  //   'Mental Health',
+  // ];
+  // String categorySelectedValue = 'Substance Abuse';
 
   var focusAreaList = [
     'School',
@@ -82,23 +90,26 @@ class _AddInteractionState extends State<AddInteraction> {
                   ),
                   Container(
                       width: Get.size.width,
-                      child: SmartLifeOutlinedButton(
-                        textStyle:
-                            textStyle14500.copyWith(color: greytextColor),
-                        text:
-                            '${selectedDate != null ? DateFormat('dd MMM yyyy').format(selectedDate!) : 'Select Date'}',
-                        onTap: () async {
-                          selectedDate = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime.now().subtract(
-                              const Duration(days: 365),
-                            ),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
-                          );
-                          setState(() {});
-                        },
+                      child: Obx(
+                        () => SmartLifeOutlinedButton(
+                          textStyle:
+                              textStyle14500.copyWith(color: greytextColor),
+                          text:
+                              '${myAppController.interactionGeneralDate.value != null ? DateFormat('dd MMM yyyy').format(myAppController.interactionGeneralDate.value!) : 'Select Date'}',
+                          onTap: () async {
+                            myAppController.interactionGeneralDate.value =
+                                await showDatePicker(
+                              context: context,
+                              firstDate: DateTime.now().subtract(
+                                const Duration(days: 365),
+                              ),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
+                              ),
+                            );
+                            setState(() {});
+                          },
+                        ),
                       )),
                   const SizedBox(
                     height: 14,
@@ -109,18 +120,21 @@ class _AddInteractionState extends State<AddInteraction> {
                   ),
                   Container(
                       width: Get.size.width,
-                      child: SmartLifeOutlinedButton(
-                          textStyle:
-                              textStyle14500.copyWith(color: greytextColor),
-                          onTap: () async {
-                            selectedTime = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    const TimeOfDay(hour: 0, minute: 0));
-                            setState(() {});
-                          },
-                          text:
-                              '${selectedTime != null ? selectedTime!.format(context) : 'Select Time'}')),
+                      child: Obx(
+                        () => SmartLifeOutlinedButton(
+                            textStyle:
+                                textStyle14500.copyWith(color: greytextColor),
+                            onTap: () async {
+                              myAppController.interactionGeneralTime.value =
+                                  await showTimePicker(
+                                      context: context,
+                                      initialTime:
+                                          const TimeOfDay(hour: 0, minute: 0));
+                              setState(() {});
+                            },
+                            text:
+                                '${myAppController.interactionGeneralTime.value != null ? myAppController.interactionGeneralTime.value!.format(context) : 'Select Time'}'),
+                      )),
                   const SizedBox(
                     height: 14,
                   ),
@@ -131,7 +145,12 @@ class _AddInteractionState extends State<AddInteraction> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
-                          controller: TextEditingController(),
+                          controller: myAppController.addressController,
+                          onChange: (value) {
+                            print("address : $value");
+                            myAppController.interactionGeneralAddress.value =
+                                value;
+                          },
                           hintText: 'Enter Your Detailed Address')),
                   const SizedBox(
                     height: 14,
@@ -151,30 +170,35 @@ class _AddInteractionState extends State<AddInteraction> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton(
-                          style: textStyle14500.copyWith(color: greytextColor),
-                          isExpanded: true,
+                        child: Obx(
+                          () => DropdownButton(
+                            style:
+                                textStyle14500.copyWith(color: greytextColor),
+                            isExpanded: true,
 
-                          // Initial Value
-                          value: categorySelectedValue,
+                            // Initial Value
+                            value: myAppController
+                                .selectedinteractionGeneralDetail.value,
 
-                          // Down Arrow Icon
-                          icon: const Icon(Icons.keyboard_arrow_down),
+                            // Down Arrow Icon
+                            icon: const Icon(Icons.keyboard_arrow_down),
 
-                          // Array list of items
-                          items: categoryItems.map((String items) {
-                            return DropdownMenuItem(
-                              value: items,
-                              child: Text(items),
-                            );
-                          }).toList(),
-                          // After selecting the desired option,it will
-                          // change button value to selected value
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              categorySelectedValue = newValue!;
-                            });
-                          },
+                            // Array list of items
+                            items: myAppController
+                                .interactionDetailDropdownItems
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            // After selecting the desired option,it will
+                            // change button value to selected value
+                            onChanged: (String? newValue) {
+                              myAppController.selectedinteractionGeneralDetail
+                                  .value = newValue!;
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -195,7 +219,14 @@ class _AddInteractionState extends State<AddInteraction> {
                       height: 100,
                       width: Get.size.width,
                       child: CustomTextField(
-                          controller: TextEditingController(),
+                          controller:
+                              myAppController.interactionGeneralNotesController,
+                          onChange: (value) {
+                            //handle change
+
+                            myAppController.interactionGeneralNotes.value =
+                                value;
+                          },
                           hintText: 'Write Important Notes Here')),
                 ],
               ),
@@ -230,30 +261,38 @@ class _AddInteractionState extends State<AddInteraction> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton(
-                          style: textStyle14500.copyWith(color: greytextColor),
-                          isExpanded: true,
+                        child: Obx(
+                          () => DropdownButton(
+                            style:
+                                textStyle14500.copyWith(color: greytextColor),
+                            isExpanded: true,
 
-                          // Initial Value
-                          value: selectedFocusArea,
+                            // Initial Value
+                            value: myAppController
+                                .selectedInteractionPhysicalFocusArea.value,
 
-                          // Down Arrow Icon
-                          icon: const Icon(Icons.keyboard_arrow_down),
+                            // Down Arrow Icon
+                            icon: const Icon(Icons.keyboard_arrow_down),
 
-                          // Array list of items
-                          items: focusAreaList.map((String items) {
-                            return DropdownMenuItem(
-                              value: items,
-                              child: Text(items),
-                            );
-                          }).toList(),
-                          // After selecting the desired option,it will
-                          // change button value to selected value
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedFocusArea = newValue!;
-                            });
-                          },
+                            // Array list of items
+                            items: myAppController
+                                .interactionFocusAreaDropdownItems
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            // After selecting the desired option,it will
+                            // change button value to selected value
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                myAppController
+                                    .selectedInteractionPhysicalFocusArea
+                                    .value = newValue!;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -276,30 +315,34 @@ class _AddInteractionState extends State<AddInteraction> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton(
-                          style: textStyle14500.copyWith(color: greytextColor),
-                          isExpanded: true,
+                        child: Obx(
+                          () => DropdownButton(
+                            style:
+                                textStyle14500.copyWith(color: greytextColor),
+                            isExpanded: true,
 
-                          // Initial Value
-                          value: selectedFocusArea,
+                            // Initial Value
+                            value: myAppController
+                                .selectedInteractionPhysicalType.value,
 
-                          // Down Arrow Icon
-                          icon: const Icon(Icons.keyboard_arrow_down),
+                            // Down Arrow Icon
+                            icon: const Icon(Icons.keyboard_arrow_down),
 
-                          // Array list of items
-                          items: focusAreaList.map((String items) {
-                            return DropdownMenuItem(
-                              value: items,
-                              child: Text(items),
-                            );
-                          }).toList(),
-                          // After selecting the desired option,it will
-                          // change button value to selected value
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedFocusArea = newValue!;
-                            });
-                          },
+                            // Array list of items
+                            items: myAppController.interactionTypeDropDownItems
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            // After selecting the desired option,it will
+                            // change button value to selected value
+                            onChanged: (String? newValue) {
+                              myAppController.selectedInteractionPhysicalType
+                                  .value = newValue!;
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -314,23 +357,32 @@ class _AddInteractionState extends State<AddInteraction> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
-                          controller: TextEditingController(),
-                          hintText: 'Enter Your Detailed Address')),
+                          onChange: (value) {
+                            //handle change
+                            myAppController.interactionPhysicalFollowUp.value =
+                                value;
+                          },
+                          controller:
+                              myAppController.interactionFollowUpController,
+                          hintText: 'Enter Follow up Details')),
                   const SizedBox(
                     height: 14,
                   ),
-                  Text(
-                    'Attachment',
-                    style: textStyle14500.copyWith(color: textColor054),
-                  ),
-                  Container(
-                      width: Get.size.width,
-                      child: CustomTextField(
-                          controller: TextEditingController(),
-                          hintText: 'Attachment Document (if any)')),
-                  const SizedBox(
-                    height: 14,
-                  ),
+                  // Text(
+                  //   'Attachment',
+                  //   style: textStyle14500.copyWith(color: textColor054),
+                  // ),
+                  // Container(
+                  //     width: Get.size.width,
+                  //     child: CustomTextField(
+                  //         onChange: (value) {
+                  //           //handle change
+                  //         },
+                  //         controller: TextEditingController(),
+                  //         hintText: 'Attachment Document (if any)')),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
                   Text(
                     'Group of People',
                     style: textStyle14500.copyWith(color: textColor054),
@@ -347,7 +399,6 @@ class _AddInteractionState extends State<AddInteraction> {
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10)),
-                          // height: Get.size.height / 1.6,
                           padding: const EdgeInsets.only(left: 15, right: 15),
                           width: Get.size.width - 40,
                           child: Column(
@@ -363,15 +414,21 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 6,
+                                height: 4,
                               ),
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
-                                      controller: TextEditingController(),
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController.interactionMemberName
+                                            .value = value;
+                                      },
+                                      controller: myAppController
+                                          .interactionmemberNameController,
                                       hintText: 'Enter Your Name')),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Gender',
@@ -390,38 +447,43 @@ class _AddInteractionState extends State<AddInteraction> {
                                             BorderRadius.circular(10)),
                                   ),
                                   child: DropdownButtonHideUnderline(
-                                    child: DropdownButton(
-                                      style: textStyle14500.copyWith(
-                                          color: greytextColor),
-                                      isExpanded: true,
+                                    child: Obx(
+                                      () => DropdownButton(
+                                        style: textStyle14500.copyWith(
+                                            color: greytextColor),
+                                        isExpanded: true,
 
-                                      // Initial Value
-                                      value: categorySelectedValue,
+                                        // Initial Value
+                                        value: myAppController
+                                            .selectedInteractionGender.value,
 
-                                      // Down Arrow Icon
-                                      icon:
-                                          const Icon(Icons.keyboard_arrow_down),
+                                        // Down Arrow Icon
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
 
-                                      // Array list of items
-                                      items: categoryItems.map((String items) {
-                                        return DropdownMenuItem(
-                                          value: items,
-                                          child: Text(items),
-                                        );
-                                      }).toList(),
-                                      // After selecting the desired option,it will
-                                      // change button value to selected value
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          categorySelectedValue = newValue!;
-                                        });
-                                      },
+                                        // Array list of items
+                                        items: myAppController
+                                            .interactionGenderList
+                                            .map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        // After selecting the desired option,it will
+                                        // change button value to selected value
+                                        onChanged: (newValue) {
+                                          myAppController
+                                              .selectedInteractionGender
+                                              .value = newValue!;
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Ethnicity',
@@ -429,15 +491,22 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 6,
+                                height: 4,
                               ),
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
-                                      controller: TextEditingController(),
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController
+                                            .selectedInteractionEthnicity
+                                            .value = value;
+                                      },
+                                      controller: myAppController
+                                          .interactionEthnicityController,
                                       hintText: 'Enter Your Ethnicity')),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Disability',
@@ -456,38 +525,44 @@ class _AddInteractionState extends State<AddInteraction> {
                                             BorderRadius.circular(10)),
                                   ),
                                   child: DropdownButtonHideUnderline(
-                                    child: DropdownButton(
-                                      style: textStyle14500.copyWith(
-                                          color: greytextColor),
-                                      isExpanded: true,
+                                    child: Obx(
+                                      () => DropdownButton(
+                                        style: textStyle14500.copyWith(
+                                            color: greytextColor),
+                                        isExpanded: true,
 
-                                      // Initial Value
-                                      value: categorySelectedValue,
+                                        // Initial Value
+                                        value: myAppController
+                                            .selectedInteractionDisabilityMember
+                                            .value,
 
-                                      // Down Arrow Icon
-                                      icon:
-                                          const Icon(Icons.keyboard_arrow_down),
+                                        // Down Arrow Icon
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
 
-                                      // Array list of items
-                                      items: categoryItems.map((String items) {
-                                        return DropdownMenuItem(
-                                          value: items,
-                                          child: Text(items),
-                                        );
-                                      }).toList(),
-                                      // After selecting the desired option,it will
-                                      // change button value to selected value
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          categorySelectedValue = newValue!;
-                                        });
-                                      },
+                                        // Array list of items
+                                        items: myAppController
+                                            .interactionDisabilityMemberList
+                                            .map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        // After selecting the desired option,it will
+                                        // change button value to selected value
+                                        onChanged: (String? newValue) {
+                                          myAppController
+                                              .selectedInteractionDisabilityMember
+                                              .value = newValue!;
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Notes',
@@ -495,16 +570,23 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 6,
+                                height: 4,
                               ),
                               Container(
                                   height: 100,
                                   width: Get.size.width,
                                   child: CustomTextField(
-                                      controller: TextEditingController(),
-                                      hintText: 'Write Important Notes Here')),
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController
+                                            .interactionMemberDisabilityNotes
+                                            .value = value;
+                                      },
+                                      controller: myAppController
+                                          .interactionMemberDisabilityNotesController,
+                                      hintText: 'Write Disability Notes Here')),
                               const SizedBox(
-                                height: 20,
+                                height: 14,
                               ),
                               Container(
                                 width: Get.size.width,
@@ -517,7 +599,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 20,
+                                height: 14,
                               ),
                             ],
                           ),
@@ -565,5 +647,27 @@ class _AddInteractionState extends State<AddInteraction> {
         ),
       ),
     );
+  }
+
+  resetValues() {
+    // Use when add call is successful
+    myAppController.interactionGeneralDate.value = null;
+    myAppController.interactionGeneralTime.value = null;
+    myAppController.interactionGeneralAddress.value = '';
+    myAppController.addressController.text = '';
+    myAppController.selectedinteractionGeneralDetail.value = '';
+    myAppController.interactionGeneralNotes.value = '';
+
+    myAppController.selectedInteractionPhysicalFocusArea.value = '';
+    myAppController.selectedInteractionPhysicalType.value = '';
+    myAppController.interactionPhysicalFollowUp.value = '';
+    myAppController.interactionPhysicalAttachment.value = null;
+
+    myAppController.interactionGroupOfProple.value = [];
+
+    myAppController.interactionMemberName.value = '';
+    myAppController.selectedInteractionGender.value = '';
+    myAppController.selectedInteractionEthnicity.value = '';
+    myAppController.interactionMemberDisabilityNotes.value = '';
   }
 }

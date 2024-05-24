@@ -223,6 +223,9 @@ class _AddActionState extends State<AddAction> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Paste Link Here')),
                   const SizedBox(
@@ -287,6 +290,9 @@ class _AddActionState extends State<AddAction> {
                       height: 100,
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Write Important Notes Here')),
                   const SizedBox(
@@ -351,6 +357,9 @@ class _AddActionState extends State<AddAction> {
                       height: 100,
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Write Important Notes Here')),
                 ],
@@ -374,6 +383,9 @@ class _AddActionState extends State<AddAction> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Attachment Document (if any)')),
                   const SizedBox(

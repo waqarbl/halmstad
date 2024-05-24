@@ -182,6 +182,9 @@ class _AddRequestState extends State<AddRequest> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Enter Source of Request')),
                   const SizedBox(
@@ -194,6 +197,9 @@ class _AddRequestState extends State<AddRequest> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Enter Nature of Request')),
                   const SizedBox(
@@ -206,6 +212,9 @@ class _AddRequestState extends State<AddRequest> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Enter Address')),
                   const SizedBox(
@@ -407,6 +416,9 @@ class _AddRequestState extends State<AddRequest> {
                   Container(
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Attachment Document (if any)')),
                   const SizedBox(
@@ -423,6 +435,9 @@ class _AddRequestState extends State<AddRequest> {
                       height: 100,
                       width: Get.size.width,
                       child: CustomTextField(
+                          onChange: (value) {
+                            //handle change
+                          },
                           controller: TextEditingController(),
                           hintText: 'Write Important Notes Here')),
                   SizedBox(
