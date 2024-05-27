@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:halmstad/models/focusAreaModel.dart';
 
 class MyAppController extends GetxController {
   // Interaction General variables
@@ -9,6 +10,8 @@ class MyAppController extends GetxController {
   final interactionGeneralTime = Rxn<TimeOfDay>();
   final interactionGeneralAddress = ''.obs;
   final addressController = TextEditingController();
+
+  final focusAreas = Rxn<FocusAreas>();
 
   final interactionDetailDropdownItems = [
     'Substance Abuse',
@@ -44,7 +47,7 @@ class MyAppController extends GetxController {
 
   final interactionMemberName = ''.obs;
   final interactionmemberNameController = TextEditingController();
-  final selectedInteractionGender = 'male'.obs;
+  final selectedInteractionGender = 'Male'.obs;
   final interactionGenderList = [
     'Male',
     'Female',

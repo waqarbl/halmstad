@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:get/get.dart';
@@ -25,6 +27,8 @@ class _InteractionsPageState extends State<InteractionsPage> {
   InteractionModel? calendarInteractionModel;
   bool isLoading = false;
 
+  String message = '';
+
   @override
   void initState() {
     // TODO: implement initState
@@ -40,10 +44,23 @@ class _InteractionsPageState extends State<InteractionsPage> {
     if (!response.contains('Error:')) {
       interactionModel = interactionModelFromJson(response);
       setState(() {});
+    } else if (jsonDecode(response)['success'] == false) {
+      message = jsonDecode(response)['message'];
+      setState(() {});
+      print(message);
     }
     isLoading = false;
     setState(() {});
   }
+
+  // addInteraction() async {
+  //   isLoading = true;
+  //   setState(() {});
+  //   // final response = await networkCalls.addInteraction();
+  //   if(!response.contains('Error:')){
+
+  //   }
+  // }
 
   getInteractionsForCalendar() async {
     isLoading = true;
@@ -200,6 +217,8 @@ class _InteractionsPageState extends State<InteractionsPage> {
                     child: CircularProgressIndicator(),
                   ),
                 )
+              ] else if (!isLoading && message != '') ...[
+                Text(message),
               ] else ...[
                 Expanded(
                     child: selectedPage == PageType.today

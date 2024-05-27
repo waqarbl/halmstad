@@ -6,15 +6,31 @@ import 'package:halmstad/network/api_urls.dart';
 import 'package:http/http.dart' as http;
 
 class NetworkCalls {
-  String interactinonsUrl = 'interactions/today';
-  String meetingsUrl = '';
-  String requestsUrl = '';
-  String actionsUrl = '';
+  Future<String> getEnums() async {
+    final response = await http.get(Uri.parse('$baseUrl$getEnumsUrl'));
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  Future<String> getFocusAreas() async {
+    final response = await http.get(Uri.parse('$baseUrl$getFocusAreasUrl'));
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
 
   Future<String> getInteractions() async {
     final token = await LocalStorage().getToken();
     final response =
-        await http.get(Uri.parse('$baseUrl$interactinonsUrl'), headers: {
+        await http.get(Uri.parse('$baseUrl$getTodayInteractionsUrl'), headers: {
       'Authorization': 'Bearer $token',
     });
 
@@ -29,7 +45,7 @@ class NetworkCalls {
   }
 
   Future<String> getMeetings() async {
-    final response = await http.get(Uri.parse('$baseUrl$meetingsUrl'));
+    final response = await http.get(Uri.parse('$baseUrl"meetingsUrl"'));
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
@@ -42,7 +58,7 @@ class NetworkCalls {
   }
 
   Future<String> getRequests() async {
-    final response = await http.get(Uri.parse('$baseUrl$requestsUrl'));
+    final response = await http.get(Uri.parse('$baseUrl"requestsUrl"'));
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
@@ -55,7 +71,7 @@ class NetworkCalls {
   }
 
   Future<String> getActions() async {
-    final response = await http.get(Uri.parse('$baseUrl$actionsUrl'));
+    final response = await http.get(Uri.parse('$baseUrl"actionsUrl"'));
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
@@ -92,6 +108,16 @@ class NetworkCalls {
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       print('success');
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  addInteraction(var body) async {
+    final response = await http.post(Uri.parse('uri'), body: jsonEncode(body));
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return response.body;
     } else {
       Get.rawSnackbar(message: response.reasonPhrase);
