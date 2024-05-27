@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/enums_controller.dart';
 import 'package:halmstad/controllers/local_storage.dart';
+import 'package:halmstad/controllers/my_app_controller.dart';
 // import 'package:halmstad/controllers/local_storage.dart';
 import 'package:halmstad/models/enumsModel.dart';
 import 'package:halmstad/models/focusAreaModel.dart';
@@ -21,7 +23,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  // final myAppController = Get.find<MyAppCon>();
+  final myAppController = Get.find<MyAppController>();
 
   moveToLogin() {
     Future.delayed(const Duration(seconds: 2), () {
@@ -34,6 +36,7 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
     moveToLogin();
     getEnums();
+    getFocusAreas();
   }
 
   getEnums() async {
@@ -51,8 +54,14 @@ class _SplashPageState extends State<SplashPage> {
 
   getFocusAreas() async {
     final response = await NetworkCalls().getFocusAreas();
+    print(response);
     if (!response.contains('Error:')) {
-      //  = focusAreasFromJson(response);
+      final focusAreaModel = focusAreasFromJson(response);
+
+      myAppController.interactionDetailDropdownItems.value =
+          focusAreaModel.data;
+      myAppController.selectedinteractionGeneralDetail.value =
+          focusAreaModel.data.first;
     }
   }
 

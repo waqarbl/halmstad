@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
-  void saveToken(String newToken) async {
+  Future<void> saveToken(String newToken) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('token', newToken);
   }

@@ -29,25 +29,54 @@ class _InteractionsPageState extends State<InteractionsPage> {
 
   String message = '';
 
+  DateTime firstDayOfWeek =
+      DateTime.now().subtract(Duration(days: DateTime.now().weekday));
+  DateTime lastDayOfWeek = DateTime.now()
+      .subtract(Duration(days: DateTime.now().weekday))
+      .add(Duration(days: 6));
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
-    getInteractionsForPage();
+    getInteractionsForToday();
   }
 
-  getInteractionsForPage() async {
+  getInteractionsForToday() async {
+    message = '';
+    isLoading = true;
+    interactionModel = null;
+    setState(() {});
+    final response = await networkCalls.getTodayInteractions();
+    if (!response.contains('Error:')) {
+      if (jsonDecode(response)['success'] == false) {
+        message = jsonDecode(response)['message'];
+        setState(() {});
+        print("Message ::: $message");
+      } else {
+        interactionModel = interactionModelFromJson(response);
+        setState(() {});
+      }
+    }
+    isLoading = false;
+    setState(() {});
+  }
+
+  getInteractionsForCalendar(DateTime startDate, DateTime endDate) async {
+    message = '';
+    calendarInteractionModel = null;
     isLoading = true;
     setState(() {});
-    final response = await networkCalls.getInteractions();
+    final response =
+        await networkCalls.getDateRangeInteractions(startDate, endDate);
     if (!response.contains('Error:')) {
-      interactionModel = interactionModelFromJson(response);
-      setState(() {});
-    } else if (jsonDecode(response)['success'] == false) {
-      message = jsonDecode(response)['message'];
-      setState(() {});
-      print(message);
+      if (jsonDecode(response)['success'] == false) {
+        message = jsonDecode(response)['message'];
+        setState(() {});
+        print("Message ::: $message");
+      } else {
+        calendarInteractionModel = interactionModelFromJson(response);
+        setState(() {});
+      }
     }
     isLoading = false;
     setState(() {});
@@ -61,18 +90,6 @@ class _InteractionsPageState extends State<InteractionsPage> {
 
   //   }
   // }
-
-  getInteractionsForCalendar() async {
-    isLoading = true;
-    setState(() {});
-    final response = await networkCalls.getInteractions();
-    if (!response.contains('Error:')) {
-      interactionModel = interactionModelFromJson(response);
-      setState(() {});
-    }
-    isLoading = false;
-    setState(() {});
-  }
 
   List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
 
@@ -149,7 +166,28 @@ class _InteractionsPageState extends State<InteractionsPage> {
                     ),
                   ],
                   selected: <PageType>{selectedPage},
-                  onSelectionChanged: (Set<PageType> newSelection) {
+                  onSelectionChanged: (Set<PageType> newSelection) async {
+                    if (selectedPage == PageType.today) {
+                      interactionModel = null;
+                      setState(() {
+                        isLoading = true;
+                      });
+                      await getInteractionsForToday();
+                      setState(() {
+                        isLoading = false;
+                      });
+                    } else {
+                      calendarInteractionModel = null;
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      await getInteractionsForCalendar(
+                          firstDayOfWeek, lastDayOfWeek);
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
                     setState(() {
                       selectedPage = newSelection.first;
                     });
@@ -178,7 +216,25 @@ class _InteractionsPageState extends State<InteractionsPage> {
                             .where((date) => isSameDay(date, day))
                             .toList();
                       },
-                      onPageChanged: (focusedDay) {},
+                      onPageChanged: (focusedDay) async {
+                        _selectedDay = focusedDay;
+                        firstDayOfWeek = focusedDay
+                            .subtract(Duration(days: focusedDay.weekday));
+                        lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
+
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        print(firstDayOfWeek);
+                        print(lastDayOfWeek);
+
+                        await getInteractionsForCalendar(
+                            firstDayOfWeek, lastDayOfWeek);
+                        setState(() {
+                          isLoading = false;
+                        });
+                      },
                       calendarBuilders: CalendarBuilders(
                         headerTitleBuilder: (context, day) {
                           final firstDay =
@@ -217,8 +273,6 @@ class _InteractionsPageState extends State<InteractionsPage> {
                     child: CircularProgressIndicator(),
                   ),
                 )
-              ] else if (!isLoading && message != '') ...[
-                Text(message),
               ] else ...[
                 Expanded(
                     child: selectedPage == PageType.today
@@ -233,21 +287,27 @@ class _InteractionsPageState extends State<InteractionsPage> {
   _getTodayPageView(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(bottom: 10),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: interactionModel?.data?.length,
-        itemBuilder: (context, index) {
-          return Container(
-              child: InteractionItem(
-            interaction: interactionModel!.data![index],
-            onTap: () {
-              Get.to(() => InteractionDetailPage(
-                    interaction: interactionModel!.data![index],
-                  ));
-            },
-          ));
-        },
-      ),
+      child: !isLoading && message == '' && interactionModel != null
+          ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: interactionModel?.data?.length,
+              itemBuilder: (context, index) {
+                return InteractionItem(
+                  interaction: interactionModel!.data![index],
+                  onTap: () {
+                    Get.to(() => InteractionDetailPage(
+                          interaction: interactionModel!.data![index],
+                        ));
+                  },
+                );
+              },
+            )
+          : Container(
+              padding: const EdgeInsets.all(30),
+              child: Text(
+                message,
+                style: textStyle16600,
+              )),
     );
   }
 
@@ -259,49 +319,32 @@ class _InteractionsPageState extends State<InteractionsPage> {
   DateTime? weekEndDay;
 
   _getCalendarPageView(BuildContext context) {
+    print(isLoading);
+    print("message :: $message");
+    print('Interaction Model :: ${calendarInteractionModel?.data?.length}');
     return Container(
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          Container(
-            child: ListView.builder(
+      child: !isLoading && message == '' && calendarInteractionModel != null
+          ? ListView.builder(
               shrinkWrap: true,
-              itemCount: interactionModel!.data?.length,
+              itemCount: calendarInteractionModel?.data?.length,
               itemBuilder: (context, index) {
                 return InteractionItem(
-                  interaction: interactionModel!.data![index],
+                  interaction: calendarInteractionModel!.data![index],
                   onTap: () {
                     Get.to(() => InteractionDetailPage(
-                          interaction: interactionModel!.data![index],
+                          interaction: calendarInteractionModel!.data![index],
                         ));
                   },
                 );
               },
-            ),
-          ),
-
-          // Container(
-          //   child: Column(
-          //     children: eventList
-          //         .map(
-          //           (e) => InteractionItem(),
-          //         )
-          //         .toList(),
-          //   ),
-          // ),
-          // Container(
-          //   height: Get.size.height / 1.34,
-          //   padding: EdgeInsets.only(bottom: 10),
-          //   child: ListView.builder(
-          //     shrinkWrap: true,
-          //     itemCount: 4,
-          //     itemBuilder: (context, index) {
-          //       return Container(child: InteractionItem());
-          //     },
-          //   ),
-          // )
-        ],
-      ),
+            )
+          : Container(
+              padding: EdgeInsets.all(30),
+              child: Text(
+                textAlign: TextAlign.center,
+                message,
+                style: textStyle16600,
+              )),
     );
   }
 }

@@ -13,12 +13,8 @@ class MyAppController extends GetxController {
 
   final focusAreas = Rxn<FocusAreas>();
 
-  final interactionDetailDropdownItems = [
-    'Substance Abuse',
-    'Violence',
-    'Mental Health',
-  ];
-  final selectedinteractionGeneralDetail = 'Violence'.obs;
+  final interactionDetailDropdownItems = [].obs;
+  final selectedinteractionGeneralDetail = Rxn<FocusArea>();
   final interactionGeneralNotesController = TextEditingController();
   final interactionGeneralNotes = ''.obs;
 

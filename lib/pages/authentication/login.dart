@@ -142,9 +142,15 @@ class _LoginPageState extends State<LoginPage> {
                                 print(
                                     'Token :::::: ${decodedRes['user']['token']}');
 
-                                if (decodedRes['status'] == 'success') {
-                                  LocalStorage()
-                                      .saveToken(decodedRes['user']['token']);
+                                String tokenFromres =
+                                    decodedRes['user']['token'];
+
+                                if (!response.contains('Error:')) {
+                                  await LocalStorage().saveToken(tokenFromres);
+
+                                  final newToken =
+                                      await LocalStorage().getToken();
+                                  print(newToken);
 
                                   Get.to(() => HomePage());
                                 }

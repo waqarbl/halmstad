@@ -3,7 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/enums_controller.dart';
 import 'package:halmstad/controllers/my_app_controller.dart';
+import 'package:halmstad/models/focusAreaModel.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -27,6 +29,7 @@ class _AddInteractionState extends State<AddInteraction> {
   }
 
   final myAppController = Get.find<MyAppController>();
+  final enumsControler = Get.find<EnumsController>();
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
@@ -41,14 +44,14 @@ class _AddInteractionState extends State<AddInteraction> {
   // ];
   // String categorySelectedValue = 'Substance Abuse';
 
-  var focusAreaList = [
-    'School',
-    'Leisure Center',
-    'Old Home',
-    'Care Home',
-  ];
+  // var focusAreaList = [
+  //   'School',
+  //   'Leisure Center',
+  //   'Old Home',
+  //   'Care Home',
+  // ];
 
-  String selectedFocusArea = 'School';
+  // String selectedFocusArea = 'School';
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +174,7 @@ class _AddInteractionState extends State<AddInteraction> {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: Obx(
-                          () => DropdownButton(
+                          () => DropdownButton<FocusArea>(
                             style:
                                 textStyle14500.copyWith(color: greytextColor),
                             isExpanded: true,
@@ -186,15 +189,15 @@ class _AddInteractionState extends State<AddInteraction> {
                             // Array list of items
                             items: myAppController
                                 .interactionDetailDropdownItems
-                                .map((String items) {
-                              return DropdownMenuItem(
+                                .map((items) {
+                              return DropdownMenuItem<FocusArea>(
                                 value: items,
-                                child: Text(items),
+                                child: Text(items.title),
                               );
                             }).toList(),
                             // After selecting the desired option,it will
                             // change button value to selected value
-                            onChanged: (String? newValue) {
+                            onChanged: (FocusArea? newValue) {
                               myAppController.selectedinteractionGeneralDetail
                                   .value = newValue!;
                             },
@@ -655,7 +658,7 @@ class _AddInteractionState extends State<AddInteraction> {
     myAppController.interactionGeneralTime.value = null;
     myAppController.interactionGeneralAddress.value = '';
     myAppController.addressController.text = '';
-    myAppController.selectedinteractionGeneralDetail.value = '';
+    myAppController.selectedinteractionGeneralDetail.value = null;
     myAppController.interactionGeneralNotes.value = '';
 
     myAppController.selectedInteractionPhysicalFocusArea.value = '';

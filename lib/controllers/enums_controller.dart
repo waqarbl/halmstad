@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:halmstad/controllers/local_storage.dart';
+import 'package:halmstad/models/focusAreaModel.dart';
 
 class EnumsController extends GetxController {
   final jsonMap = {}.obs;
@@ -81,4 +82,6 @@ class EnumsController extends GetxController {
   List requestUrgency = [];
   List requestStatus = [];
   List todoPriority = [];
+
+  List<FocusArea> focusAreasList = [];
 }
