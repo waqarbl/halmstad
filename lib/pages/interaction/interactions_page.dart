@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:halmstad/constants/colors.dart';
@@ -39,6 +40,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
   void initState() {
     super.initState();
     getInteractionsForToday();
+    getInteractionsForCalendar(firstDayOfWeek, lastDayOfWeek);
   }
 
   getInteractionsForToday() async {
@@ -47,15 +49,17 @@ class _InteractionsPageState extends State<InteractionsPage> {
     interactionModel = null;
     setState(() {});
     final response = await networkCalls.getTodayInteractions();
+    log(response);
     if (!response.contains('Error:')) {
       if (jsonDecode(response)['success'] == false) {
         message = jsonDecode(response)['message'];
-        setState(() {});
+
         print("Message ::: $message");
       } else {
         interactionModel = interactionModelFromJson(response);
-        setState(() {});
       }
+      isLoading = false;
+      setState(() {});
     }
     isLoading = false;
     setState(() {});
@@ -68,28 +72,21 @@ class _InteractionsPageState extends State<InteractionsPage> {
     setState(() {});
     final response =
         await networkCalls.getDateRangeInteractions(startDate, endDate);
+    log(response);
     if (!response.contains('Error:')) {
       if (jsonDecode(response)['success'] == false) {
         message = jsonDecode(response)['message'];
-        setState(() {});
+
         print("Message ::: $message");
       } else {
         calendarInteractionModel = interactionModelFromJson(response);
-        setState(() {});
       }
+      isLoading = false;
+      setState(() {});
     }
     isLoading = false;
     setState(() {});
   }
-
-  // addInteraction() async {
-  //   isLoading = true;
-  //   setState(() {});
-  //   // final response = await networkCalls.addInteraction();
-  //   if(!response.contains('Error:')){
-
-  //   }
-  // }
 
   List eventList = [DateTime(2024, 5, 15), DateTime(2024, 5, 18)];
 
@@ -112,6 +109,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
         ),
         appBar: AppBar(
           backgroundColor: bluePrimary,
+          automaticallyImplyLeading: false,
           title: const Text(
             'Interaction',
             style: TextStyle(color: Colors.white),
@@ -167,30 +165,22 @@ class _InteractionsPageState extends State<InteractionsPage> {
                   ],
                   selected: <PageType>{selectedPage},
                   onSelectionChanged: (Set<PageType> newSelection) async {
+                    selectedPage = newSelection.first;
+                    setState(() {});
                     if (selectedPage == PageType.today) {
                       interactionModel = null;
-                      setState(() {
-                        isLoading = true;
-                      });
+                      message = '';
+
                       await getInteractionsForToday();
-                      setState(() {
-                        isLoading = false;
-                      });
-                    } else {
+                    } else if (selectedPage == PageType.calendar) {
                       calendarInteractionModel = null;
-                      setState(() {
-                        isLoading = true;
-                      });
+                      message = '';
 
                       await getInteractionsForCalendar(
                           firstDayOfWeek, lastDayOfWeek);
-                      setState(() {
-                        isLoading = false;
-                      });
                     }
-                    setState(() {
-                      selectedPage = newSelection.first;
-                    });
+
+                    setState(() {});
                   },
                 ),
               ),
@@ -222,18 +212,8 @@ class _InteractionsPageState extends State<InteractionsPage> {
                             .subtract(Duration(days: focusedDay.weekday));
                         lastDayOfWeek = firstDayOfWeek.add(Duration(days: 6));
 
-                        setState(() {
-                          isLoading = true;
-                        });
-
-                        print(firstDayOfWeek);
-                        print(lastDayOfWeek);
-
                         await getInteractionsForCalendar(
                             firstDayOfWeek, lastDayOfWeek);
-                        setState(() {
-                          isLoading = false;
-                        });
                       },
                       calendarBuilders: CalendarBuilders(
                         headerTitleBuilder: (context, day) {
@@ -290,13 +270,13 @@ class _InteractionsPageState extends State<InteractionsPage> {
       child: !isLoading && message == '' && interactionModel != null
           ? ListView.builder(
               shrinkWrap: true,
-              itemCount: interactionModel?.data?.length,
+              itemCount: interactionModel?.data.length,
               itemBuilder: (context, index) {
                 return InteractionItem(
-                  interaction: interactionModel!.data![index],
+                  interaction: interactionModel!.data[index],
                   onTap: () {
                     Get.to(() => InteractionDetailPage(
-                          interaction: interactionModel!.data![index],
+                          interaction: interactionModel!.data[index],
                         ));
                   },
                 );

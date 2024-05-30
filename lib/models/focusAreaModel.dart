@@ -11,7 +11,7 @@ String focusAreasToJson(FocusAreas data) => json.encode(data.toJson());
 
 class FocusAreas {
   bool success;
-  List<FocusArea> data;
+  List<FocusAreaInModel> data;
 
   FocusAreas({
     required this.success,
@@ -20,8 +20,8 @@ class FocusAreas {
 
   factory FocusAreas.fromJson(Map<String, dynamic> json) => FocusAreas(
         success: json["success"],
-        data: List<FocusArea>.from(
-            json["data"].map((x) => FocusArea.fromJson(x))),
+        data: List<FocusAreaInModel>.from(
+            json["data"].map((x) => FocusAreaInModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -30,14 +30,14 @@ class FocusAreas {
       };
 }
 
-class FocusArea {
+class FocusAreaInModel {
   int id;
   String title;
   String description;
   DateTime createdAt;
   DateTime updatedAt;
 
-  FocusArea({
+  FocusAreaInModel({
     required this.id,
     required this.title,
     required this.description,
@@ -45,7 +45,8 @@ class FocusArea {
     required this.updatedAt,
   });
 
-  factory FocusArea.fromJson(Map<String, dynamic> json) => FocusArea(
+  factory FocusAreaInModel.fromJson(Map<String, dynamic> json) =>
+      FocusAreaInModel(
         id: json["id"],
         title: json["title"],
         description: json["description"],

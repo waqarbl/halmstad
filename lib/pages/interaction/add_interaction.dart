@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:halmstad/constants/colors.dart';
-import 'package:halmstad/controllers/enums_controller.dart';
 import 'package:halmstad/controllers/my_app_controller.dart';
 import 'package:halmstad/models/focusAreaModel.dart';
+import 'package:halmstad/models/interactionModel.dart';
+import 'package:halmstad/models/memberModel.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -29,29 +32,67 @@ class _AddInteractionState extends State<AddInteraction> {
   }
 
   final myAppController = Get.find<MyAppController>();
-  final enumsControler = Get.find<EnumsController>();
 
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
+  final membersList = <Map<String, dynamic>>[].obs;
 
-  String address = '';
+  int memberCount = 0;
 
-  List peopleList = [];
-  // var categoryItems = [
-  //   'Substance Abuse',
-  //   'Violence',
-  //   'Mental Health',
-  // ];
-  // String categorySelectedValue = 'Substance Abuse';
+  addInteraction() async {
+    DateTime activityTime = DateTime(
+      myAppController.interactionGeneralDate.value!.year,
+      myAppController.interactionGeneralDate.value!.month,
+      myAppController.interactionGeneralDate.value!.day,
+      myAppController.interactionGeneralTime.value!.hour,
+      myAppController.interactionGeneralTime.value!.minute,
+    );
 
-  // var focusAreaList = [
-  //   'School',
-  //   'Leisure Center',
-  //   'Old Home',
-  //   'Care Home',
-  // ];
+    print(activityTime.toIso8601String());
 
-  // String selectedFocusArea = 'School';
+    var body = {
+      "activityTime": "${activityTime.toIso8601String()}Z",
+      "interactiontitle": myAppController.interactionGeneralTitle.value,
+      "interactiondes": myAppController.interactionGeneralDescription.value,
+      "followupdetails": myAppController.interactionPhysicalFollowUp.value,
+      "location": {
+        "title": "my loc 2",
+        "address": myAppController.interactionGeneralAddress.value,
+        "locationType": myAppController.selectedInteractionType.value,
+        "plusCode": "123123",
+        "coordinates": {"lat": 1.2345, "lng": 3.456}
+      },
+      "group": {
+        "title": "my second group",
+        "description": "second ever group to be created in the app",
+        "members": membersList
+      },
+      "focusAreaId":
+          myAppController.selectedInteractionPhysicalFocusArea.value?.id,
+      "interactionDetails": {
+        "substance_use_observed":
+            myAppController.selectedinteractionGeneralDetail.value ==
+                    "SUBSTANCE_USE"
+                ? true
+                : false,
+        "violence_observed":
+            myAppController.selectedinteractionGeneralDetail.value == "VIOLENCE"
+                ? true
+                : false,
+        "violence_type":
+            myAppController.selectedinteractionGeneralDetail.value ==
+                    "MENTAL_HEALTH"
+                ? true
+                : false
+      }
+    };
+
+    final response = await NetworkCalls().addInteraction(body);
+    if (!response.contains('Error:')) {
+      Get.back();
+      Get.rawSnackbar(
+          message: 'Interaction Added Successfully',
+          backgroundColor: Colors.green.shade500);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +138,11 @@ class _AddInteractionState extends State<AddInteraction> {
                         () => SmartLifeOutlinedButton(
                           textStyle:
                               textStyle14500.copyWith(color: greytextColor),
-                          text:
-                              '${myAppController.interactionGeneralDate.value != null ? DateFormat('dd MMM yyyy').format(myAppController.interactionGeneralDate.value!) : 'Select Date'}',
+                          text: myAppController.interactionGeneralDate.value !=
+                                  null
+                              ? DateFormat('dd MMM yyyy').format(
+                                  myAppController.interactionGeneralDate.value!)
+                              : 'Select Date',
                           onTap: () async {
                             myAppController.interactionGeneralDate.value =
                                 await showDatePicker(
@@ -142,6 +186,42 @@ class _AddInteractionState extends State<AddInteraction> {
                     height: 14,
                   ),
                   Text(
+                    'Title',
+                    style: textStyle14500.copyWith(color: textColor054),
+                  ),
+                  Container(
+                      width: Get.size.width,
+                      child: CustomTextField(
+                          controller:
+                              myAppController.interactionGeneralTitleController,
+                          onChange: (value) {
+                            print("title : $value");
+                            myAppController.interactionGeneralTitle.value =
+                                value;
+                          },
+                          hintText: 'Enter title for Interaction')),
+                  const SizedBox(
+                    height: 14,
+                  ),
+                  Text(
+                    'Description',
+                    style: textStyle14500.copyWith(color: textColor054),
+                  ),
+                  Container(
+                      width: Get.size.width,
+                      child: CustomTextField(
+                          controller: myAppController
+                              .interactionGeneralDescriptionController,
+                          onChange: (value) {
+                            print("description : $value");
+                            myAppController
+                                .interactionGeneralDescription.value = value;
+                          },
+                          hintText: 'Enter description for Interaction')),
+                  const SizedBox(
+                    height: 14,
+                  ),
+                  Text(
                     'Address',
                     style: textStyle14500.copyWith(color: textColor054),
                   ),
@@ -174,7 +254,7 @@ class _AddInteractionState extends State<AddInteraction> {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: Obx(
-                          () => DropdownButton<FocusArea>(
+                          () => DropdownButton<String>(
                             style:
                                 textStyle14500.copyWith(color: greytextColor),
                             isExpanded: true,
@@ -190,14 +270,14 @@ class _AddInteractionState extends State<AddInteraction> {
                             items: myAppController
                                 .interactionDetailDropdownItems
                                 .map((items) {
-                              return DropdownMenuItem<FocusArea>(
+                              return DropdownMenuItem<String>(
                                 value: items,
-                                child: Text(items.title),
+                                child: Text(items),
                               );
                             }).toList(),
                             // After selecting the desired option,it will
                             // change button value to selected value
-                            onChanged: (FocusArea? newValue) {
+                            onChanged: (String? newValue) {
                               myAppController.selectedinteractionGeneralDetail
                                   .value = newValue!;
                             },
@@ -265,7 +345,7 @@ class _AddInteractionState extends State<AddInteraction> {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: Obx(
-                          () => DropdownButton(
+                          () => DropdownButton<FocusAreaInModel>(
                             style:
                                 textStyle14500.copyWith(color: greytextColor),
                             isExpanded: true,
@@ -280,15 +360,15 @@ class _AddInteractionState extends State<AddInteraction> {
                             // Array list of items
                             items: myAppController
                                 .interactionFocusAreaDropdownItems
-                                .map((String items) {
-                              return DropdownMenuItem(
+                                .map((items) {
+                              return DropdownMenuItem<FocusAreaInModel>(
                                 value: items,
-                                child: Text(items),
+                                child: Text(items.title),
                               );
                             }).toList(),
                             // After selecting the desired option,it will
                             // change button value to selected value
-                            onChanged: (String? newValue) {
+                            onChanged: (FocusAreaInModel? newValue) {
                               setState(() {
                                 myAppController
                                     .selectedInteractionPhysicalFocusArea
@@ -319,22 +399,22 @@ class _AddInteractionState extends State<AddInteraction> {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: Obx(
-                          () => DropdownButton(
+                          () => DropdownButton<String>(
                             style:
                                 textStyle14500.copyWith(color: greytextColor),
                             isExpanded: true,
 
                             // Initial Value
-                            value: myAppController
-                                .selectedInteractionPhysicalType.value,
+                            value:
+                                myAppController.selectedInteractionType.value,
 
                             // Down Arrow Icon
                             icon: const Icon(Icons.keyboard_arrow_down),
 
                             // Array list of items
                             items: myAppController.interactionTypeDropDownItems
-                                .map((String items) {
-                              return DropdownMenuItem(
+                                .map((items) {
+                              return DropdownMenuItem<String>(
                                 value: items,
                                 child: Text(items),
                               );
@@ -342,8 +422,8 @@ class _AddInteractionState extends State<AddInteraction> {
                             // After selecting the desired option,it will
                             // change button value to selected value
                             onChanged: (String? newValue) {
-                              myAppController.selectedInteractionPhysicalType
-                                  .value = newValue!;
+                              myAppController.selectedInteractionType.value =
+                                  newValue!;
                             },
                           ),
                         ),
@@ -397,7 +477,7 @@ class _AddInteractionState extends State<AddInteraction> {
                     onTap: () async {
                       //show dialog add member
                       print('Show dialog add member');
-                      final result = await Get.dialog(Dialog(
+                      Member? result = await Get.dialog(Dialog(
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.white,
@@ -409,7 +489,7 @@ class _AddInteractionState extends State<AddInteraction> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Name',
@@ -417,7 +497,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 4,
+                                height: 2,
                               ),
                               Container(
                                   width: Get.size.width,
@@ -431,7 +511,29 @@ class _AddInteractionState extends State<AddInteraction> {
                                           .interactionmemberNameController,
                                       hintText: 'Enter Your Name')),
                               const SizedBox(
-                                height: 10,
+                                height: 6,
+                              ),
+                              Text(
+                                'Age',
+                                style: textStyle14500.copyWith(
+                                    color: textColor054),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              Container(
+                                  width: Get.size.width,
+                                  child: CustomTextField(
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController
+                                            .interactionMemberAge.value = value;
+                                      },
+                                      controller: myAppController
+                                          .interactionMemberAgeController,
+                                      hintText: 'Enter Your Age')),
+                              const SizedBox(
+                                height: 6,
                               ),
                               Text(
                                 'Gender',
@@ -486,7 +588,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 6,
                               ),
                               Text(
                                 'Ethnicity',
@@ -494,7 +596,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 4,
+                                height: 2,
                               ),
                               Container(
                                   width: Get.size.width,
@@ -509,7 +611,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                           .interactionEthnicityController,
                                       hintText: 'Enter Your Ethnicity')),
                               const SizedBox(
-                                height: 10,
+                                height: 6,
                               ),
                               Text(
                                 'Disability',
@@ -565,7 +667,7 @@ class _AddInteractionState extends State<AddInteraction> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 6,
                               ),
                               Text(
                                 'Notes',
@@ -573,10 +675,10 @@ class _AddInteractionState extends State<AddInteraction> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 4,
+                                height: 2,
                               ),
                               Container(
-                                  height: 100,
+                                  height: 60,
                                   width: Get.size.width,
                                   child: CustomTextField(
                                       onChange: (value) {
@@ -589,11 +691,33 @@ class _AddInteractionState extends State<AddInteraction> {
                                           .interactionMemberDisabilityNotesController,
                                       hintText: 'Write Disability Notes Here')),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Container(
                                 width: Get.size.width,
                                 child: SmartLifePrimaryButton(
+                                  onTap: () {
+                                    Member member = Member(
+                                        age: int.parse(myAppController
+                                            .interactionMemberAge.value),
+                                        name: myAppController
+                                            .interactionMemberName.value,
+                                        gender: myAppController
+                                            .selectedInteractionGender.value
+                                            .toUpperCase(),
+                                        ethnicity: myAppController
+                                            .selectedInteractionEthnicity.value,
+                                        disability: myAppController
+                                            .interactionMemberDisabilityNotes
+                                            .value);
+
+                                    membersList.add(member.toJson());
+                                    memberCount++;
+                                    resetMember();
+                                    setState(() {});
+                                    print(membersList);
+                                    Get.back();
+                                  },
                                   borderRadius: 10,
                                   text: 'Add Member',
                                   textStyle: textStyle14500.copyWith(
@@ -602,30 +726,48 @@ class _AddInteractionState extends State<AddInteraction> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                             ],
                           ),
                         ),
                       ));
 
-                      print('result:::: ${result}');
+                      // if (result != null) {
+                      //   // membersList.add(result);
+                      //   membersList.add(result.toJson());
+                      //   print(jsonEncode(membersList));
+                      //   resetMember();
+                      // }
+                      // setState(() {});
+                      // print('result:::: ${result}');
                     },
                     child: Container(
                       width: 60,
                       height: 60,
-                      child: GFBorder(
-                        type: GFBorderType.circle,
-                        dashedLine: [4, 6],
-                        color: const Color(0xFFD0D5DD),
-                        strokeWidth: 2,
-                        child: const Center(
-                            child: Icon(
-                          Icons.add,
-                          size: 40,
-                          color: Color(0xFFD0D5DD),
-                        )),
-                      ),
+                      child: memberCount > 0
+                          ? CircleAvatar(
+                              backgroundColor: bluePrimary,
+                              child: Center(
+                                child: Text(
+                                  memberCount.toString(),
+                                  style: textStyle16600.copyWith(
+                                      fontSize: 22, color: whiteColor),
+                                ),
+                              ),
+                            )
+                          : GFBorder(
+                              type: GFBorderType.circle,
+                              dashedLine: [4, 6],
+                              color: const Color(0xFFD0D5DD),
+                              strokeWidth: 2,
+                              child: const Center(
+                                  child: Icon(
+                                Icons.add,
+                                size: 40,
+                                color: Color(0xFFD0D5DD),
+                              )),
+                            ),
                     ),
                   ),
                   const SizedBox(
@@ -634,6 +776,10 @@ class _AddInteractionState extends State<AddInteraction> {
                   Container(
                     width: Get.size.width,
                     child: SmartLifePrimaryButton(
+                      onTap: () {
+                        //add interaction
+                        addInteraction();
+                      },
                       borderRadius: 10,
                       text: 'Add',
                       textStyle: textStyle14500.copyWith(
@@ -652,17 +798,28 @@ class _AddInteractionState extends State<AddInteraction> {
     );
   }
 
+  resetMember() {
+    myAppController.interactionMemberAge.value = '';
+    myAppController.interactionMemberAgeController.text = '';
+    myAppController.interactionMemberName.value = '';
+    myAppController.interactionmemberNameController.text = '';
+    myAppController.selectedInteractionEthnicity.value = '';
+    myAppController.interactionEthnicityController.text = '';
+    myAppController.interactionMemberDisabilityNotes.value = '';
+    myAppController.interactionMemberDisabilityNotesController.text = '';
+  }
+
   resetValues() {
     // Use when add call is successful
     myAppController.interactionGeneralDate.value = null;
     myAppController.interactionGeneralTime.value = null;
     myAppController.interactionGeneralAddress.value = '';
     myAppController.addressController.text = '';
-    myAppController.selectedinteractionGeneralDetail.value = null;
+    myAppController.selectedinteractionGeneralDetail.value = '';
     myAppController.interactionGeneralNotes.value = '';
 
-    myAppController.selectedInteractionPhysicalFocusArea.value = '';
-    myAppController.selectedInteractionPhysicalType.value = '';
+    myAppController.selectedInteractionPhysicalFocusArea.value = null;
+    myAppController.selectedInteractionType.value = '';
     myAppController.interactionPhysicalFollowUp.value = '';
     myAppController.interactionPhysicalAttachment.value = null;
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
-import 'package:google_places_autocomplete_text_field/google_places_autocomplete_text_field.dart';
+// import 'package:google_places_autocomplete_text_field/google_places_autocomplete_text_field.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/my_app_controller.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +15,7 @@ class AddAction extends StatefulWidget {
 }
 
 class _AddActionState extends State<AddAction> {
+  final myAppController = Get.find<MyAppController>();
   @override
   void initState() {
     // TODO: implement initState
@@ -46,7 +47,31 @@ class _AddActionState extends State<AddAction> {
 
   String selectedFocusArea = 'School';
 
-  TextEditingController placesController = TextEditingController();
+  // TextEditingController placesController = TextEditingController();
+
+  addAction() async {
+    var body = {
+      "activityType": myAppController.actionSelectedActivity.value,
+      "actionType": myAppController.actionSelectedType.value,
+      "description": myAppController.actionDescription.value,
+      "actionTime": "2024-05-31T10:00:00Z",
+      "outcomeType": myAppController.actionSelectedOutcome.value,
+      "outcomeDetails": myAppController.actionOutcomeDetails.value
+    };
+
+    final response = await NetworkCalls().addAction(body);
+    print(response);
+    if (!response.contains('Error:')) {
+      print('No error in response');
+      resetValues();
+      setState(() {});
+
+      Get.back();
+      Get.rawSnackbar(
+          message: 'Action Added Successfully',
+          backgroundColor: Colors.green.shade500);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +139,13 @@ class _AddActionState extends State<AddAction> {
                       child: SmartLifeOutlinedButton(
                         textStyle:
                             textStyle14500.copyWith(color: greytextColor),
-                        text: selectedDate != null
-                            ? DateFormat('dd MMM yyyy').format(selectedDate!)
+                        text: myAppController.actionSelectedDate.value != null
+                            ? DateFormat('dd MMM yyyy').format(
+                                myAppController.actionSelectedDate.value!)
                             : 'Select Date',
                         onTap: () async {
-                          selectedDate = await showDatePicker(
+                          myAppController.actionSelectedDate.value =
+                              await showDatePicker(
                             context: context,
                             firstDate: DateTime.now().subtract(
                               const Duration(days: 365),
@@ -143,14 +170,16 @@ class _AddActionState extends State<AddAction> {
                           textStyle:
                               textStyle14500.copyWith(color: greytextColor),
                           onTap: () async {
-                            selectedTime = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    const TimeOfDay(hour: 0, minute: 0));
+                            myAppController.actionSelectedTime.value =
+                                await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        const TimeOfDay(hour: 0, minute: 0));
                             setState(() {});
                           },
-                          text: selectedTime != null
-                              ? selectedTime!.format(context)
+                          text: myAppController.actionSelectedTime.value != null
+                              ? myAppController.actionSelectedTime.value!
+                                  .format(context)
                               : 'Select Time')),
                   const SizedBox(
                     height: 18,
@@ -185,19 +214,20 @@ class _AddActionState extends State<AddAction> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton(
+                        child: DropdownButton<String>(
                           style: textStyle14500.copyWith(color: greytextColor),
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.actionSelectedActivity.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.actionActivityDropdown
+                              .map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -206,28 +236,29 @@ class _AddActionState extends State<AddAction> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.actionSelectedActivity.value =
+                                  newValue!;
                             });
                           },
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 14,
-                  ),
-                  Text(
-                    'Link (Interaction/Meeting/Request)',
-                    style: textStyle14500.copyWith(color: textColor054),
-                  ),
-                  Container(
-                      width: Get.size.width,
-                      child: CustomTextField(
-                          onChange: (value) {
-                            //handle change
-                          },
-                          controller: TextEditingController(),
-                          hintText: 'Paste Link Here')),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
+                  // Text(
+                  //   'Link (Interaction/Meeting/Request)',
+                  //   style: textStyle14500.copyWith(color: textColor054),
+                  // ),
+                  // Container(
+                  //     width: Get.size.width,
+                  //     child: CustomTextField(
+                  //         onChange: (value) {
+                  //           //handle change
+                  //         },
+                  //         controller: TextEditingController(),
+                  //         hintText: 'Paste Link Here')),
                   const SizedBox(
                     height: 14,
                   ),
@@ -246,19 +277,20 @@ class _AddActionState extends State<AddAction> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton(
+                        child: DropdownButton<String>(
                           style: textStyle14500.copyWith(color: greytextColor),
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.actionSelectedType.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items:
+                              myAppController.actionTypeDropDown.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -267,7 +299,8 @@ class _AddActionState extends State<AddAction> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.actionSelectedType.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -292,8 +325,10 @@ class _AddActionState extends State<AddAction> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+                            myAppController.actionDescription.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller:
+                              myAppController.actionDescriptionController,
                           hintText: 'Write Important Notes Here')),
                   const SizedBox(
                     height: 14,
@@ -318,14 +353,15 @@ class _AddActionState extends State<AddAction> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.actionSelectedOutcome.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.actionOutcomeDropdown
+                              .map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -334,7 +370,8 @@ class _AddActionState extends State<AddAction> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.actionSelectedOutcome.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -359,8 +396,10 @@ class _AddActionState extends State<AddAction> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+                            myAppController.actionOutcomeDetails.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller:
+                              myAppController.actionOutcomeDetailsController,
                           hintText: 'Write Important Notes Here')),
                 ],
               ),
@@ -373,27 +412,30 @@ class _AddActionState extends State<AddAction> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    height: 14,
-                  ),
-                  Text(
-                    'Attachment',
-                    style: textStyle14500.copyWith(color: textColor054),
-                  ),
-                  Container(
-                      width: Get.size.width,
-                      child: CustomTextField(
-                          onChange: (value) {
-                            //handle change
-                          },
-                          controller: TextEditingController(),
-                          hintText: 'Attachment Document (if any)')),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
+                  // Text(
+                  //   'Attachment',
+                  //   style: textStyle14500.copyWith(color: textColor054),
+                  // ),
+                  // Container(
+                  //     width: Get.size.width,
+                  //     child: CustomTextField(
+                  //         onChange: (value) {
+                  //           //handle change
+                  //         },
+                  //         controller: TextEditingController(),
+                  //         hintText: 'Attachment Document (if any)')),
                   const SizedBox(
                     height: 30,
                   ),
                   Container(
                     width: Get.size.width,
                     child: SmartLifePrimaryButton(
+                      onTap: () async {
+                        addAction();
+                      },
                       borderRadius: 10,
                       text: 'Add',
                       textStyle: textStyle14500.copyWith(
@@ -410,5 +452,12 @@ class _AddActionState extends State<AddAction> {
         ),
       ),
     );
+  }
+
+  resetValues() {
+    myAppController.actionSelectedDate.value = null;
+    myAppController.actionSelectedTime.value = null;
+    myAppController.actionDescription.value = '';
+    myAppController.actionOutcomeDetails.value = '';
   }
 }

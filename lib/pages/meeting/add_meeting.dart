@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/my_app_controller.dart';
+import 'package:halmstad/models/interactionModel.dart';
+import 'package:halmstad/models/memberModel.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -14,36 +17,58 @@ class AddMeeting extends StatefulWidget {
 }
 
 class _AddMeetingState extends State<AddMeeting> {
+  final myAppController = Get.find<MyAppController>();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
 
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    resetValues();
+  }
 
-  String address = '';
+  List<Map<String, dynamic>> membersList = [];
 
-  List peopleList = [];
-  // var categoryItems = [
-  //   'Substance Abuse',
-  //   'Violence',
-  //   'Mental Health',
-  // ];
+  int memberCount = 0;
 
-  var meetingType = ['Parent Meeting', 'Partner Meeting'];
-  String selectedMeetingType = 'Parent Meeting';
-  // String categorySelectedValue = 'Substance Abuse';
+  addMeeting() async {
+    DateTime activityTime = DateTime(
+      myAppController.meetingSelectedDate.value!.year,
+      myAppController.meetingSelectedDate.value!.month,
+      myAppController.meetingSelectedDate.value!.day,
+      myAppController.meetingSelectedTime.value!.hour,
+      myAppController.meetingSelectedTime.value!.minute,
+    );
 
-  var focusAreaList = [
-    'School',
-    'Leisure Center',
-    'Old Home',
-    'Care Home',
-  ];
+    print(activityTime.toIso8601String());
 
-  String selectedFocusArea = 'School';
+    var body = {
+      "activityTime": "${activityTime.toIso8601String()}Z",
+      "detailedAddress": myAppController.meetingAddress.value,
+      "notes": myAppController.meetingNotes.value,
+      "followUpPlanned": true,
+      "MeetingType": myAppController.meetingSelectedType.value,
+      "group": {
+        "title": "my second group",
+        "description": "second ever group to be created in the app",
+        "members": membersList,
+      }
+    };
+
+    final response = await NetworkCalls().addMeeting(body);
+    print("Hello ::: $response");
+    if (!response.contains('Error:')) {
+      print('not error');
+      Get.back();
+      Get.rawSnackbar(
+          message: 'Meeting Added Successfully',
+          backgroundColor: Colors.green.shade500);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +113,13 @@ class _AddMeetingState extends State<AddMeeting> {
                       child: SmartLifeOutlinedButton(
                         textStyle:
                             textStyle14500.copyWith(color: greytextColor),
-                        text: selectedDate != null
-                            ? DateFormat('dd MMM yyyy').format(selectedDate!)
+                        text: myAppController.meetingSelectedDate.value != null
+                            ? DateFormat('dd MMM yyyy').format(
+                                myAppController.meetingSelectedDate.value!)
                             : 'Select Date',
                         onTap: () async {
-                          selectedDate = await showDatePicker(
+                          myAppController.meetingSelectedDate.value =
+                              await showDatePicker(
                             context: context,
                             firstDate: DateTime.now().subtract(
                               const Duration(days: 365),
@@ -117,15 +144,18 @@ class _AddMeetingState extends State<AddMeeting> {
                           textStyle:
                               textStyle14500.copyWith(color: greytextColor),
                           onTap: () async {
-                            selectedTime = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    const TimeOfDay(hour: 0, minute: 0));
+                            myAppController.meetingSelectedTime.value =
+                                await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        const TimeOfDay(hour: 0, minute: 0));
                             setState(() {});
                           },
-                          text: selectedTime != null
-                              ? selectedTime!.format(context)
-                              : 'Select Time')),
+                          text:
+                              myAppController.meetingSelectedTime.value != null
+                                  ? myAppController.meetingSelectedTime.value!
+                                      .format(context)
+                                  : 'Select Time')),
                   const SizedBox(
                     height: 14,
                   ),
@@ -138,8 +168,9 @@ class _AddMeetingState extends State<AddMeeting> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+                            myAppController.meetingAddress.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.meetingAddressController,
                           hintText: 'Enter Your Detailed Address')),
                   const SizedBox(
                     height: 14,
@@ -164,14 +195,14 @@ class _AddMeetingState extends State<AddMeeting> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.meetingSelectedType.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.meetingType.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -180,7 +211,8 @@ class _AddMeetingState extends State<AddMeeting> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.meetingSelectedType.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -205,8 +237,10 @@ class _AddMeetingState extends State<AddMeeting> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+
+                            myAppController.meetingNotes.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.meetingNotesController,
                           hintText: 'Write Important Notes Here')),
                 ],
               ),
@@ -219,24 +253,24 @@ class _AddMeetingState extends State<AddMeeting> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    height: 14,
-                  ),
-                  Text(
-                    'Attachment',
-                    style: textStyle14500.copyWith(color: textColor054),
-                  ),
-                  Container(
-                      width: Get.size.width,
-                      child: CustomTextField(
-                          onChange: (value) {
-                            //handle change
-                          },
-                          controller: TextEditingController(),
-                          hintText: 'Attachment Document (if any)')),
-                  const SizedBox(
-                    height: 14,
-                  ),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
+                  // Text(
+                  //   'Attachment',
+                  //   style: textStyle14500.copyWith(color: textColor054),
+                  // ),
+                  // Container(
+                  //     width: Get.size.width,
+                  //     child: CustomTextField(
+                  //         onChange: (value) {
+                  //           //handle change
+                  //         },
+                  //         controller: TextEditingController(),
+                  //         hintText: 'Attachment Document (if any)')),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
                   Text(
                     'Group of People',
                     style: textStyle14500.copyWith(color: textColor054),
@@ -248,12 +282,11 @@ class _AddMeetingState extends State<AddMeeting> {
                     onTap: () async {
                       //show dialog add member
                       print('Show dialog add member');
-                      final result = await Get.dialog(Dialog(
+                      Member? result = await Get.dialog(Dialog(
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10)),
-                          // height: Get.size.height / 1.6,
                           padding: const EdgeInsets.only(left: 15, right: 15),
                           width: Get.size.width - 40,
                           child: Column(
@@ -261,7 +294,7 @@ class _AddMeetingState extends State<AddMeeting> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(
-                                height: 14,
+                                height: 10,
                               ),
                               Text(
                                 'Name',
@@ -269,18 +302,43 @@ class _AddMeetingState extends State<AddMeeting> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 6,
+                                height: 2,
                               ),
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
                                       onChange: (value) {
                                         //handle change
+                                        myAppController
+                                            .meetingMemberName.value = value;
                                       },
-                                      controller: TextEditingController(),
+                                      controller: myAppController
+                                          .meetingmemberNameController,
                                       hintText: 'Enter Your Name')),
                               const SizedBox(
-                                height: 14,
+                                height: 6,
+                              ),
+                              Text(
+                                'Age',
+                                style: textStyle14500.copyWith(
+                                    color: textColor054),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              Container(
+                                  width: Get.size.width,
+                                  child: CustomTextField(
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController.meetingMemberAge.value =
+                                            value;
+                                      },
+                                      controller: myAppController
+                                          .meetingMemberAgeController,
+                                      hintText: 'Enter Your Age')),
+                              const SizedBox(
+                                height: 6,
                               ),
                               Text(
                                 'Gender',
@@ -299,38 +357,41 @@ class _AddMeetingState extends State<AddMeeting> {
                                             BorderRadius.circular(10)),
                                   ),
                                   child: DropdownButtonHideUnderline(
-                                    child: DropdownButton(
-                                      style: textStyle14500.copyWith(
-                                          color: greytextColor),
-                                      isExpanded: true,
+                                    child: Obx(
+                                      () => DropdownButton(
+                                        style: textStyle14500.copyWith(
+                                            color: greytextColor),
+                                        isExpanded: true,
 
-                                      // Initial Value
-                                      value: selectedMeetingType,
+                                        // Initial Value
+                                        value: myAppController
+                                            .selectedMeetingGender.value,
 
-                                      // Down Arrow Icon
-                                      icon:
-                                          const Icon(Icons.keyboard_arrow_down),
+                                        // Down Arrow Icon
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
 
-                                      // Array list of items
-                                      items: meetingType.map((String items) {
-                                        return DropdownMenuItem(
-                                          value: items,
-                                          child: Text(items),
-                                        );
-                                      }).toList(),
-                                      // After selecting the desired option,it will
-                                      // change button value to selected value
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          selectedMeetingType = newValue!;
-                                        });
-                                      },
+                                        // Array list of items
+                                        items: myAppController.meetingGenderList
+                                            .map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        // After selecting the desired option,it will
+                                        // change button value to selected value
+                                        onChanged: (newValue) {
+                                          myAppController.selectedMeetingGender
+                                              .value = newValue!;
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               const SizedBox(
-                                height: 14,
+                                height: 6,
                               ),
                               Text(
                                 'Ethnicity',
@@ -338,22 +399,127 @@ class _AddMeetingState extends State<AddMeeting> {
                                     color: textColor054),
                               ),
                               const SizedBox(
-                                height: 6,
+                                height: 2,
                               ),
                               Container(
                                   width: Get.size.width,
                                   child: CustomTextField(
                                       onChange: (value) {
                                         //handle change
+                                        myAppController.selectedMeetingEthnicity
+                                            .value = value;
                                       },
-                                      controller: TextEditingController(),
+                                      controller: myAppController
+                                          .meetingEthnicityController,
                                       hintText: 'Enter Your Ethnicity')),
                               const SizedBox(
-                                height: 30,
+                                height: 6,
+                              ),
+                              Text(
+                                'Disability',
+                                style: textStyle14500.copyWith(
+                                    color: textColor054),
+                              ),
+                              Container(
+                                width: Get.size.width,
+                                height: 44,
+                                child: InputDecorator(
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0, vertical: 15.0),
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: Obx(
+                                      () => DropdownButton(
+                                        style: textStyle14500.copyWith(
+                                            color: greytextColor),
+                                        isExpanded: true,
+
+                                        // Initial Value
+                                        value: myAppController
+                                            .selectedMeetingDisabilityMember
+                                            .value,
+
+                                        // Down Arrow Icon
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
+
+                                        // Array list of items
+                                        items: myAppController
+                                            .meetingDisabilityMemberList
+                                            .map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        // After selecting the desired option,it will
+                                        // change button value to selected value
+                                        onChanged: (String? newValue) {
+                                          myAppController
+                                              .selectedMeetingDisabilityMember
+                                              .value = newValue!;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 6,
+                              ),
+                              Text(
+                                'Notes',
+                                style: textStyle14500.copyWith(
+                                    color: textColor054),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              Container(
+                                  height: 60,
+                                  width: Get.size.width,
+                                  child: CustomTextField(
+                                      onChange: (value) {
+                                        //handle change
+                                        myAppController
+                                            .meetingMemberDisabilityNotes
+                                            .value = value;
+                                      },
+                                      controller: myAppController
+                                          .meetingMemberDisabilityNotesController,
+                                      hintText: 'Write Disability Notes Here')),
+                              const SizedBox(
+                                height: 10,
                               ),
                               Container(
                                 width: Get.size.width,
                                 child: SmartLifePrimaryButton(
+                                  onTap: () {
+                                    Member member = Member(
+                                        age: int.parse(myAppController
+                                            .meetingMemberAge.value),
+                                        name: myAppController
+                                            .meetingMemberName.value,
+                                        gender: myAppController
+                                            .selectedMeetingGender.value
+                                            .toUpperCase(),
+                                        ethnicity: myAppController
+                                            .selectedMeetingEthnicity.value,
+                                        disability: myAppController
+                                            .meetingMemberDisabilityNotes
+                                            .value);
+
+                                    membersList.add(member.toJson());
+                                    memberCount++;
+                                    resetMember();
+                                    setState(() {});
+                                    print(membersList);
+                                    Get.back();
+                                  },
                                   borderRadius: 10,
                                   text: 'Add Member',
                                   textStyle: textStyle14500.copyWith(
@@ -362,14 +528,12 @@ class _AddMeetingState extends State<AddMeeting> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 20,
+                                height: 10,
                               ),
                             ],
                           ),
                         ),
                       ));
-
-                      print('result:::: $result');
                     },
                     child: Container(
                       width: 60,
@@ -394,6 +558,10 @@ class _AddMeetingState extends State<AddMeeting> {
                   Container(
                     width: Get.size.width,
                     child: SmartLifePrimaryButton(
+                      onTap: () {
+                        //call add meeting here
+                        addMeeting();
+                      },
                       borderRadius: 10,
                       text: 'Add',
                       textStyle: textStyle14500.copyWith(
@@ -410,5 +578,29 @@ class _AddMeetingState extends State<AddMeeting> {
         ),
       ),
     );
+  }
+
+  resetMember() {
+    myAppController.meetingMemberAge.value = '';
+    myAppController.meetingMemberAgeController.text = '';
+    myAppController.meetingMemberName.value = '';
+    myAppController.meetingmemberNameController.text = '';
+    myAppController.selectedMeetingEthnicity.value = '';
+    myAppController.meetingEthnicityController.text = '';
+    myAppController.meetingMemberDisabilityNotes.value = '';
+    myAppController.meetingMemberDisabilityNotesController.text = '';
+  }
+
+  resetValues() {
+    // Use when add call is successful
+    myAppController.meetingSelectedDate.value = null;
+    myAppController.meetingSelectedTime.value = null;
+    myAppController.meetingAddress.value = '';
+    myAppController.meetingAddressController.text = '';
+    myAppController.meetingNotes.value = '';
+    myAppController.meetingNotesController.text = '';
+
+    myAppController.meetingMembers.value = [];
+    membersList = [];
   }
 }

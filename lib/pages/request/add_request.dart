@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/controllers/my_app_controller.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/widgets/reusables.dart';
 import 'package:intl/intl.dart';
 
@@ -14,14 +14,12 @@ class AddRequest extends StatefulWidget {
 }
 
 class _AddRequestState extends State<AddRequest> {
+  final myAppController = Get.find<MyAppController>();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
-
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
 
   String address = '';
 
@@ -32,8 +30,8 @@ class _AddRequestState extends State<AddRequest> {
   //   'Mental Health',
   // ];
 
-  var meetingType = ['Parent Meeting', 'Partner Meeting'];
-  String selectedMeetingType = 'Parent Meeting';
+  // var meetingType = ['Parent Meeting', 'Partner Meeting'];
+  // String selectedMeetingType = 'Parent Meeting';
   // String categorySelectedValue = 'Substance Abuse';
 
   var focusAreaList = [
@@ -45,6 +43,37 @@ class _AddRequestState extends State<AddRequest> {
 
   String selectedFocusArea = 'School';
 
+  addRequest() async {
+    var body = {
+      "requestType": myAppController.requestSelectedType.value,
+      "time": "2024-05-23T10:00:00.000Z",
+      "source": myAppController.requestSource.value,
+      "natureOfRequest": myAppController.requestNature.value,
+      "tipCategory": myAppController.requestSelectedTipCategory.value,
+      "locationId": 1,
+      "requestCategory": myAppController.requestSelectedCategory.value,
+      "urgency": myAppController.requestSelectedUrgency.value,
+      "status": myAppController.requestSelectedStatus.value,
+      "notes": myAppController.requestNotes.value,
+      "resolved": false,
+      "createdById": 1,
+      "assignedToId": 3,
+      "detailedAddress": myAppController.requestAddress.value
+    };
+
+    final response = await NetworkCalls().addRequest(body);
+    if (!response.contains('Error:')) {
+      print('No error in response');
+      resetValues();
+      setState(() {});
+
+      Get.back();
+      Get.rawSnackbar(
+          message: 'Action Added Successfully',
+          backgroundColor: Colors.green.shade500);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +81,7 @@ class _AddRequestState extends State<AddRequest> {
         backgroundColor: bluePrimary,
         iconTheme: const IconThemeData(color: whiteColor),
         title: Text(
-          'Add Meeting',
+          'Add Request',
           style: textStyle16600.copyWith(
             color: whiteColor,
           ),
@@ -85,14 +114,17 @@ class _AddRequestState extends State<AddRequest> {
                   ),
                   Container(
                       width: Get.size.width,
+                      height: 44,
                       child: SmartLifeOutlinedButton(
                         textStyle:
                             textStyle14500.copyWith(color: greytextColor),
-                        text: selectedDate != null
-                            ? DateFormat('dd MMM yyyy').format(selectedDate!)
+                        text: myAppController.requestSelectedDate.value != null
+                            ? DateFormat('dd MMM yyyy').format(
+                                myAppController.requestSelectedDate.value!)
                             : 'Select Date',
                         onTap: () async {
-                          selectedDate = await showDatePicker(
+                          myAppController.requestSelectedDate.value =
+                              await showDatePicker(
                             context: context,
                             firstDate: DateTime.now().subtract(
                               const Duration(days: 365),
@@ -113,19 +145,23 @@ class _AddRequestState extends State<AddRequest> {
                   ),
                   Container(
                       width: Get.size.width,
+                      height: 44,
                       child: SmartLifeOutlinedButton(
                           textStyle:
                               textStyle14500.copyWith(color: greytextColor),
                           onTap: () async {
-                            selectedTime = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    const TimeOfDay(hour: 0, minute: 0));
+                            myAppController.requestSelectedTime.value =
+                                await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        const TimeOfDay(hour: 0, minute: 0));
                             setState(() {});
                           },
-                          text: selectedTime != null
-                              ? selectedTime!.format(context)
-                              : 'Select Time')),
+                          text:
+                              myAppController.requestSelectedTime.value != null
+                                  ? myAppController.requestSelectedTime.value!
+                                      .format(context)
+                                  : 'Select Time')),
                   const SizedBox(
                     height: 14,
                   ),
@@ -149,14 +185,14 @@ class _AddRequestState extends State<AddRequest> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.requestSelectedType.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.requestType.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -165,7 +201,8 @@ class _AddRequestState extends State<AddRequest> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.requestSelectedType.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -184,8 +221,10 @@ class _AddRequestState extends State<AddRequest> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+
+                            myAppController.requestSource.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.requestSourceController,
                           hintText: 'Enter Source of Request')),
                   const SizedBox(
                     height: 14,
@@ -199,8 +238,9 @@ class _AddRequestState extends State<AddRequest> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+                            myAppController.requestNature.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.requestNatureController,
                           hintText: 'Enter Nature of Request')),
                   const SizedBox(
                     height: 14,
@@ -214,8 +254,9 @@ class _AddRequestState extends State<AddRequest> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+                            myAppController.requestAddress.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.requestAddressController,
                           hintText: 'Enter Address')),
                   const SizedBox(
                     height: 14,
@@ -240,14 +281,16 @@ class _AddRequestState extends State<AddRequest> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value:
+                              myAppController.requestSelectedTipCategory.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items:
+                              myAppController.requestTipCategory.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -256,7 +299,8 @@ class _AddRequestState extends State<AddRequest> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.requestSelectedTipCategory.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -286,14 +330,14 @@ class _AddRequestState extends State<AddRequest> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.requestSelectedCategory.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.requestCategory.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -302,7 +346,8 @@ class _AddRequestState extends State<AddRequest> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.requestSelectedCategory.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -332,14 +377,14 @@ class _AddRequestState extends State<AddRequest> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.requestSelectedUrgency.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.requestUrgency.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -348,7 +393,8 @@ class _AddRequestState extends State<AddRequest> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.requestSelectedUrgency.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -378,14 +424,14 @@ class _AddRequestState extends State<AddRequest> {
                           isExpanded: true,
 
                           // Initial Value
-                          value: selectedMeetingType,
+                          value: myAppController.requestSelectedStatus.value,
 
                           // Down Arrow Icon
                           icon: const Icon(Icons.keyboard_arrow_down),
 
                           // Array list of items
-                          items: meetingType.map((String items) {
-                            return DropdownMenuItem(
+                          items: myAppController.requestStatus.map((items) {
+                            return DropdownMenuItem<String>(
                               value: items,
                               child: Text(items),
                             );
@@ -394,7 +440,8 @@ class _AddRequestState extends State<AddRequest> {
                           // change button value to selected value
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedMeetingType = newValue!;
+                              myAppController.requestSelectedStatus.value =
+                                  newValue!;
                             });
                           },
                         ),
@@ -406,21 +453,21 @@ class _AddRequestState extends State<AddRequest> {
                   //     child: CustomTextField(
                   //         controller: TextEditingController(),
                   //         hintText: 'Select Categssory')),
-                  const SizedBox(
-                    height: 14,
-                  ),
-                  Text(
-                    'Attachment',
-                    style: textStyle14500.copyWith(color: textColor054),
-                  ),
-                  Container(
-                      width: Get.size.width,
-                      child: CustomTextField(
-                          onChange: (value) {
-                            //handle change
-                          },
-                          controller: TextEditingController(),
-                          hintText: 'Attachment Document (if any)')),
+                  // const SizedBox(
+                  //   height: 14,
+                  // ),
+                  // Text(
+                  //   'Attachment',
+                  //   style: textStyle14500.copyWith(color: textColor054),
+                  // ),
+                  // Container(
+                  //     width: Get.size.width,
+                  //     child: CustomTextField(
+                  //         onChange: (value) {
+                  //           //handle change
+                  //         },
+                  //         controller: TextEditingController(),
+                  //         hintText: 'Attachment Document (if any)')),
                   const SizedBox(
                     height: 14,
                   ),
@@ -437,8 +484,10 @@ class _AddRequestState extends State<AddRequest> {
                       child: CustomTextField(
                           onChange: (value) {
                             //handle change
+
+                            myAppController.requestNotes.value = value;
                           },
-                          controller: TextEditingController(),
+                          controller: myAppController.requestNotesController,
                           hintText: 'Write Important Notes Here')),
                   SizedBox(
                     height: 40,
@@ -446,6 +495,9 @@ class _AddRequestState extends State<AddRequest> {
                   Container(
                     width: Get.size.width,
                     child: SmartLifePrimaryButton(
+                      onTap: () {
+                        addRequest();
+                      },
                       borderRadius: 10,
                       text: 'Add',
                       textStyle: textStyle14500.copyWith(
@@ -462,5 +514,21 @@ class _AddRequestState extends State<AddRequest> {
         ),
       ),
     );
+  }
+
+  resetValues() {
+    myAppController.requestSelectedDate.value = null;
+    myAppController.requestSelectedTime.value = null;
+    myAppController.requestSource.value = '';
+    myAppController.requestSourceController.text = '';
+
+    myAppController.requestNature.value = '';
+    myAppController.requestNatureController.text = '';
+
+    myAppController.requestAddress.value = '';
+    myAppController.requestAddressController.text = '';
+
+    myAppController.requestNotes.value = '';
+    myAppController.requestNotesController.text = '';
   }
 }

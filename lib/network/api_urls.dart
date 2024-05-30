@@ -12,17 +12,15 @@ var getTodayInteractionsUrl = 'interactions/today';
 var getDateRangeUrlInteractionsUrl = 'interactions';
 
 // Meetings
-var addMeetingUrl = '';
-var getUpcomingMeetingsUrl = '';
-var getCompletedMeetingsUrl = '';
+var meetingsUrl = 'meetings';
 
 //Requests
 
-var addRequestUrl = '';
-var getRequestMeetingsUrl = '';
-var getRequestTipsUrl = '';
+var requestsUrl = 'requests';
 
 //Actions
-var addActionUrl = '';
-var getUpcomingActionsUrl = '';
-var getCompletedActionsUrl = '';
+var actionsUrl = 'actions';
+
+//mark as resolved
+
+var resolveUrl = 'requests/resolved';

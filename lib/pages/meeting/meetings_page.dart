@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/models/meetingModel.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/pages/meeting/add_meeting.dart';
 import 'package:halmstad/pages/meeting/meeting_detail_page.dart';
 import 'package:halmstad/widgets/reusables.dart';
@@ -15,6 +20,64 @@ class MeetingsPage extends StatefulWidget {
 }
 
 class _MeetingsPageState extends State<MeetingsPage> {
+  final networkCalls = NetworkCalls();
+  @override
+  void initState() {
+    super.initState();
+    getMeetings();
+  }
+
+  String message = '';
+  bool isLoading = false;
+
+  List<Meeting> upcomingList = [];
+  List<Meeting> completedList = [];
+
+  getMeetings() async {
+    message = '';
+    isLoading = true;
+    setState(() {});
+    final response = await networkCalls.getMeetings();
+    log(response);
+    if (!response.contains('Error:')) {
+      if (jsonDecode(response)['success'] == false) {
+        message = jsonDecode(response)['message'];
+
+        print("Message ::: $message");
+      } else {
+        MeetingModel meetingModel = meetingModelFromJson(response);
+        var timeNow = DateTime.utc(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+            DateTime.now().hour,
+            DateTime.now().minute,
+            DateTime.now().millisecond);
+        meetingModel.data.forEach((element) {
+          final elementTime = DateTime.utc(
+              element.activityTime.year,
+              element.activityTime.month,
+              element.activityTime.day,
+              element.activityTime.hour,
+              element.activityTime.minute,
+              element.activityTime.millisecond);
+
+          if (elementTime.isAfter(timeNow)) {
+            upcomingList.add(element);
+          } else {
+            completedList.add(element);
+          }
+        });
+        isLoading = false;
+        setState(() {});
+      }
+      isLoading = false;
+      setState(() {});
+    }
+    isLoading = false;
+    setState(() {});
+  }
+
   PageType selectedPage = PageType.upcoming;
   @override
   Widget build(BuildContext context) {
@@ -23,8 +86,6 @@ class _MeetingsPageState extends State<MeetingsPage> {
           shape: const OvalBorder(),
           backgroundColor: const Color.fromARGB(255, 1, 3, 90),
           onPressed: () {
-            // Get.to(() => AddInteraction());
-            // print('floating action button pressed');
             Get.to(() => const AddMeeting());
           },
           child: const Icon(
@@ -34,6 +95,7 @@ class _MeetingsPageState extends State<MeetingsPage> {
         ),
         appBar: AppBar(
           backgroundColor: bluePrimary,
+          automaticallyImplyLeading: false,
           title: const Text(
             'Meeting',
             style: TextStyle(color: Colors.white),
@@ -88,7 +150,9 @@ class _MeetingsPageState extends State<MeetingsPage> {
                     ),
                   ],
                   selected: <PageType>{selectedPage},
-                  onSelectionChanged: (Set<PageType> newSelection) {
+                  onSelectionChanged: (Set<PageType> newSelection) async {
+                    await getMeetings();
+
                     setState(() {
                       selectedPage = newSelection.first;
                     });
@@ -108,40 +172,70 @@ class _MeetingsPageState extends State<MeetingsPage> {
 
   _getUpcomingPageView(BuildContext context) {
     return Container(
-      height: Get.size.height / 1.34,
+      height: Get.size.height / 1.4,
       padding: const EdgeInsets.only(bottom: 10),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(child: MeetingItem(
-            onTap: () {
-              print("meeting card clicked");
-              Get.to(() => const MeetingDetailPage());
-            },
-          ));
-        },
-      ),
+      child: upcomingList.isEmpty
+          ? Container(
+              width: Get.size.width,
+              padding: const EdgeInsets.all(30),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : const Text(
+                      'There are no upcoming meetings',
+                      textAlign: TextAlign.center,
+                      style: textStyle16600,
+                    ))
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: upcomingList.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: MeetingItem(
+                  meeting: upcomingList[index],
+                  onTap: () {
+                    print("meeting card clicked");
+                    Get.to(() => MeetingDetailPage(
+                          meeting: upcomingList[index],
+                        ));
+                  },
+                ));
+              },
+            ),
     );
   }
 
   _getCompletedPageView(BuildContext context) {
     return Container(
-      height: Get.size.height / 1.34,
+      height: Get.size.height / 1.4,
       padding: const EdgeInsets.only(bottom: 10),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 2,
-        itemBuilder: (context, index) {
-          return Container(child: MeetingItem(
-            onTap: () {
-              print("meeting card clicked");
+      child: completedList.isEmpty
+          ? Container(
+              width: Get.size.width,
+              padding: const EdgeInsets.all(30),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : const Text(
+                      'There are no completed meetings',
+                      textAlign: TextAlign.center,
+                      style: textStyle16600,
+                    ))
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: completedList.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: MeetingItem(
+                  meeting: completedList[index],
+                  onTap: () {
+                    print("meeting card clicked");
 
-              Get.to(() => const MeetingDetailPage());
-            },
-          ));
-        },
-      ),
+                    Get.to(() => MeetingDetailPage(
+                          meeting: completedList[index],
+                        ));
+                  },
+                ));
+              },
+            ),
     );
   }
 

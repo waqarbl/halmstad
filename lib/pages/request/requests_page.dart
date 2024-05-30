@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/models/requestModel.dart';
+import 'package:halmstad/network/network_calls.dart';
 import 'package:halmstad/pages/request/add_request.dart';
 import 'package:halmstad/pages/request/request_detail_page.dart';
 import 'package:halmstad/widgets/reusables.dart';
@@ -15,6 +20,42 @@ class RequestsPage extends StatefulWidget {
 }
 
 class _RequestsPageState extends State<RequestsPage> {
+  final networkCalls = NetworkCalls();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getRequests();
+  }
+
+  List<RequestModel> meetingvisistList = [];
+  List<RequestModel> tipsList = [];
+
+  String message = '';
+  bool isLoading = false;
+
+  getRequests() async {
+    message = '';
+    isLoading = true;
+    meetingvisistList = [];
+    tipsList = [];
+    // interactionModel = null;
+    setState(() {});
+    final response = await networkCalls.getRequests();
+    log(response);
+    final decodedResponse = jsonDecode(response);
+    for (var element in decodedResponse) {
+      RequestModel requestModel = RequestModel.fromJson(element);
+      if (requestModel.requestType == 'TIP') {
+        tipsList.add(requestModel);
+      } else {
+        meetingvisistList.add(requestModel);
+      }
+    }
+    isLoading = false;
+    setState(() {});
+  }
+
   PageType selectedPage = PageType.meetingvisit;
   @override
   Widget build(BuildContext context) {
@@ -22,10 +63,7 @@ class _RequestsPageState extends State<RequestsPage> {
         floatingActionButton: FloatingActionButton(
           shape: const OvalBorder(),
           backgroundColor: const Color.fromARGB(255, 1, 3, 90),
-          onPressed: () {
-            // Get.to(() => AddInteraction());
-            // print('floating action button pressed');
-            // Get.to(() => const AddMeeting());
+          onPressed: () async {
             Get.to(() => AddRequest());
           },
           child: const Icon(
@@ -35,6 +73,7 @@ class _RequestsPageState extends State<RequestsPage> {
         ),
         appBar: AppBar(
           backgroundColor: bluePrimary,
+          automaticallyImplyLeading: false,
           title: const Text(
             'Request',
             style: TextStyle(color: Colors.white),
@@ -89,10 +128,10 @@ class _RequestsPageState extends State<RequestsPage> {
                     ),
                   ],
                   selected: <PageType>{selectedPage},
-                  onSelectionChanged: (Set<PageType> newSelection) {
-                    setState(() {
-                      selectedPage = newSelection.first;
-                    });
+                  onSelectionChanged: (Set<PageType> newSelection) async {
+                    await getRequests();
+                    selectedPage = newSelection.first;
+                    setState(() {});
                   },
                 ),
               ),
@@ -109,40 +148,78 @@ class _RequestsPageState extends State<RequestsPage> {
 
   _getMeetingVisitsPageView(BuildContext context) {
     return Container(
-      height: Get.size.height / 1.34,
+      height: Get.size.height / 1.4,
       padding: const EdgeInsets.only(bottom: 10),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(child: MeetingVisitItem(
-            onTap: () {
-              print("meeting card clicked");
-              Get.to(() => const RequestDetailPage());
-            },
-          ));
-        },
-      ),
+      child: meetingvisistList.isEmpty
+          ? Container(
+              padding: const EdgeInsets.all(30),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : const Text(
+                      'There are no upcoming actions',
+                      style: textStyle16600,
+                    ))
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: meetingvisistList.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: MeetingVisitItem(
+                  request: meetingvisistList[index],
+                  onTap: () async {
+                    print("meeting card clicked");
+                    final result = await Get.to(() => RequestDetailPage(
+                          requestDetail: meetingvisistList[index],
+                        ));
+                    print(result);
+                    if (result != null) {
+                      if (result == 'success') {
+                        await getRequests();
+                      }
+                    }
+                  },
+                ));
+              },
+            ),
     );
   }
 
   _getTipsPageView(BuildContext context) {
     return Container(
-      height: Get.size.height / 1.34,
+      height: Get.size.height / 1.4,
       padding: const EdgeInsets.only(bottom: 10),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 2,
-        itemBuilder: (context, index) {
-          return Container(child: TipItem(
-            onTap: () {
-              print("meeting card clicked");
+      child: tipsList.isEmpty
+          ? Container(
+              padding: const EdgeInsets.all(30),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : const Text(
+                      'There are no upcoming actions',
+                      style: textStyle16600,
+                    ))
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: tipsList.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: TipItem(
+                  tip: tipsList[index],
+                  onTap: () async {
+                    print("meeting card clicked");
 
-              Get.to(() => const RequestDetailPage());
-            },
-          ));
-        },
-      ),
+                    final result = await Get.to(() => RequestDetailPage(
+                          requestDetail: tipsList[index],
+                        ));
+                    print(result);
+                    if (result != null) {
+                      if (result == 'success') {
+                        await getRequests();
+                      }
+                    }
+                  },
+                ));
+              },
+            ),
     );
   }
 }

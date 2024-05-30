@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
+import 'package:halmstad/models/meetingModel.dart';
 import 'package:halmstad/widgets/reusables.dart';
+import 'package:intl/intl.dart';
 
-class MeetingDetailPage extends StatelessWidget {
-  const MeetingDetailPage({super.key});
+class MeetingDetailPage extends StatefulWidget {
+  final Meeting meeting;
+  MeetingDetailPage({super.key, required this.meeting});
 
+  @override
+  State<MeetingDetailPage> createState() => _MeetingDetailPageState();
+}
+
+class _MeetingDetailPageState extends State<MeetingDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,11 +43,16 @@ class MeetingDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Dated: ', text2: '22 Mar 2024'),
+            TextRow(
+                text1: 'Dated: ',
+                text2: DateFormat('dd MMM yyyy')
+                    .format(widget.meeting.activityTime)),
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Time: ', text2: '4:22 PM'),
+            TextRow(
+                text1: 'Time: ',
+                text2: DateFormat.jm().format(widget.meeting.activityTime)),
             const SizedBox(
               height: 12,
             ),
@@ -54,7 +67,7 @@ class MeetingDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.46,
                     child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                      widget.meeting.detailedAddress,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -65,7 +78,7 @@ class MeetingDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Meeting Type: ', text2: 'Parental'),
+            const TextRow(text1: 'Meeting Type: ', text2: 'widget.meeting.'),
             const SizedBox(
               height: 12,
             ),
@@ -80,7 +93,7 @@ class MeetingDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.46,
                     child: Text(
-                      'Detail: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                      widget.meeting.notes,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -88,44 +101,44 @@ class MeetingDetailPage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(
-              height: 30,
-            ),
-            const Text(
-              'Attachments:  ',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              ],
-            ),
+            // const SizedBox(
+            //   height: 30,
+            // ),
+            // const Text(
+            //   'Attachments:  ',
+            //   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            // ),
+            // Row(
+            //   children: [
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //     const SizedBox(
+            //       width: 10,
+            //     ),
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //     const SizedBox(
+            //       width: 10,
+            //     ),
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(
               height: 30,
             ),
@@ -146,7 +159,7 @@ class MeetingDetailPage extends StatelessWidget {
                   ),
                   Container(
                     child: Text(
-                      '5',
+                      widget.meeting.group.members.length.toString(),
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
                   ),

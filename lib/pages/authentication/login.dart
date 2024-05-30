@@ -17,6 +17,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool passwordVisible = false;
+  bool isLoading = false;
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -125,53 +126,64 @@ class _LoginPageState extends State<LoginPage> {
                       Container(
                           padding: const EdgeInsets.only(
                               left: 20, right: 20, top: 20),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                // Get.off(() => HomePage());
-                                var body = {
-                                  'email': emailController.text,
-                                  'password': passwordController.text,
-                                };
+                          child: isLoading
+                              ? Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () async {
+                                    isLoading = true;
+                                    setState(() {});
+                                    if (_formKey.currentState!.validate()) {
+                                      // Get.off(() => HomePage());
+                                      var body = {
+                                        'email': emailController.text,
+                                        'password': passwordController.text,
+                                      };
 
-                                final response =
-                                    await NetworkCalls().loginUser(body);
+                                      final response =
+                                          await NetworkCalls().loginUser(body);
 
-                                print(response);
-                                final decodedRes = jsonDecode(response);
-                                print(
-                                    'Token :::::: ${decodedRes['user']['token']}');
+                                      print(response);
+                                      final decodedRes = jsonDecode(response);
+                                      print(
+                                          'Token :::::: ${decodedRes['user']['token']}');
 
-                                String tokenFromres =
-                                    decodedRes['user']['token'];
+                                      String tokenFromres =
+                                          decodedRes['user']['token'];
 
-                                if (!response.contains('Error:')) {
-                                  await LocalStorage().saveToken(tokenFromres);
+                                      if (!response.contains('Error:')) {
+                                        await LocalStorage()
+                                            .saveToken(tokenFromres);
 
-                                  final newToken =
-                                      await LocalStorage().getToken();
-                                  print(newToken);
+                                        final newToken =
+                                            await LocalStorage().getToken();
+                                        print(newToken);
+                                        isLoading = false;
+                                        setState(() {});
 
-                                  Get.to(() => HomePage());
-                                }
-                                // if(jsonDecode(response))
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              maximumSize: const Size(400, 50),
-                              minimumSize: const Size(400, 50),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 1, 3, 90),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(7), // button's shape
-                              ),
-                            ),
-                            child: const Text(
-                              'Sign In',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          )),
+                                        Get.to(() => HomePage());
+                                      }
+                                      isLoading = false;
+                                      setState(() {});
+                                      // if(jsonDecode(response))
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    maximumSize: const Size(400, 50),
+                                    minimumSize: const Size(400, 50),
+                                    backgroundColor:
+                                        const Color.fromARGB(255, 1, 3, 90),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          7), // button's shape
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Sign In',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                )),
                       GestureDetector(
                         onTap: () {
                           print('Forgot Password');
@@ -202,25 +214,29 @@ class _LoginPageState extends State<LoginPage> {
                       Container(
                           padding: const EdgeInsets.only(
                               left: 20, right: 20, top: 20),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Get.to(() => RegisterPage());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              maximumSize: const Size(400, 50),
-                              minimumSize: const Size(400, 50),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 1, 3, 90),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(7), // button's shape
-                              ),
-                            ),
-                            child: const Text(
-                              'Register',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          )),
+                          child: isLoading
+                              ? Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () {
+                                    Get.to(() => RegisterPage());
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    maximumSize: const Size(400, 50),
+                                    minimumSize: const Size(400, 50),
+                                    backgroundColor:
+                                        const Color.fromARGB(255, 1, 3, 90),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          7), // button's shape
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Register',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                )),
                     ],
                   ),
                 ),

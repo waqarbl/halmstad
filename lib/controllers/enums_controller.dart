@@ -4,12 +4,8 @@ import 'package:halmstad/models/focusAreaModel.dart';
 
 class EnumsController extends GetxController {
   final jsonMap = {}.obs;
-  @override
-  void onInit() async {
-    // TODO: implement onInit
-    super.onInit();
-    jsonMap.value = await LocalStorage().readJsonFromFile();
 
+  parseEnums() {
     jsonMap.forEach((key, value) {
       print(key);
       switch (key) {
@@ -83,5 +79,5 @@ class EnumsController extends GetxController {
   List requestStatus = [];
   List todoPriority = [];
 
-  List<FocusArea> focusAreasList = [];
+  List<FocusAreaInModel> focusAreasList = [];
 }

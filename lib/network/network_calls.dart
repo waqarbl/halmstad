@@ -67,45 +67,6 @@ class NetworkCalls {
     }
   }
 
-  Future<String> getMeetings() async {
-    final response = await http.get(Uri.parse('$baseUrl"meetingsUrl"'));
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      print('success');
-      print(response.body);
-      return response.body;
-    } else {
-      Get.rawSnackbar(message: response.reasonPhrase);
-      return "Error: ${response.reasonPhrase}";
-    }
-  }
-
-  Future<String> getRequests() async {
-    final response = await http.get(Uri.parse('$baseUrl"requestsUrl"'));
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      print('success');
-      print(response.body);
-      return response.body;
-    } else {
-      Get.rawSnackbar(message: response.reasonPhrase);
-      return "Error: ${response.reasonPhrase}";
-    }
-  }
-
-  Future<String> getActions() async {
-    final response = await http.get(Uri.parse('$baseUrl"actionsUrl"'));
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      print('success');
-      print(response.body);
-      return response.body;
-    } else {
-      Get.rawSnackbar(message: response.reasonPhrase);
-      return "Error: ${response.reasonPhrase}";
-    }
-  }
-
   Future<String> registerUser(var body) async {
     final response = await http.post(
         Uri.parse(
@@ -140,7 +101,139 @@ class NetworkCalls {
   }
 
   addInteraction(var body) async {
-    final response = await http.post(Uri.parse('uri'), body: jsonEncode(body));
+    final token = await LocalStorage().getToken();
+    final response = await http.post(Uri.parse('$baseUrl$addInteractionUrl'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body));
+
+    print(response.body);
+    print(response.reasonPhrase);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  //addAction
+
+  addAction(var body) async {
+    final token = await LocalStorage().getToken();
+    final response = await http.post(Uri.parse('$baseUrl$actionsUrl'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body));
+
+    print(response.body);
+    print(response.reasonPhrase);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  //getAction // get actions and check is before today--
+
+  Future<String> getActions() async {
+    final token = await LocalStorage().getToken();
+    final response = await http.get(Uri.parse('$baseUrl$actionsUrl'), headers: {
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  //requests
+
+  addRequest(var body) async {
+    final token = await LocalStorage().getToken();
+    final response = await http.post(Uri.parse('$baseUrl$requestsUrl'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body));
+
+    print(response.body);
+    print(response.reasonPhrase);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  Future<String> getRequests() async {
+    final token = await LocalStorage().getToken();
+    final response =
+        await http.get(Uri.parse('$baseUrl$requestsUrl'), headers: {
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  // meetings calls
+
+  addMeeting(var body) async {
+    final token = await LocalStorage().getToken();
+    final response = await http.post(Uri.parse('$baseUrl$meetingsUrl'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body));
+
+    print(response.body);
+    print(response.reasonPhrase);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  Future<String> getMeetings() async {
+    final token = await LocalStorage().getToken();
+    final response =
+        await http.get(Uri.parse('$baseUrl$meetingsUrl'), headers: {
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.body;
+    } else {
+      Get.rawSnackbar(message: response.reasonPhrase);
+      return "Error: ${response.reasonPhrase}";
+    }
+  }
+
+  markAsResolved(String id) async {
+    final token = await LocalStorage().getToken();
+    final response = await http.post(Uri.parse('$baseUrl$resolveUrl'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({"id": id}));
+
+    print(response.body);
+    print(response.reasonPhrase);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response.body;
     } else {

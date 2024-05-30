@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:halmstad/widgets/reusables.dart';
+import 'package:halmstad/models/actionModel.dart' as actionModel;
+import 'package:intl/intl.dart';
 
 class ActionDetailPage extends StatelessWidget {
-  const ActionDetailPage({super.key});
+  ActionDetailPage({super.key, required this.action});
+
+  final actionModel.Action action;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +39,15 @@ class ActionDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Dated: ', text2: '22 Mar 2024'),
+            TextRow(
+                text1: 'Dated: ',
+                text2: DateFormat('dd MMM yyyy').format(action.actionTime)),
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Time: ', text2: '4:22 PM'),
+            TextRow(
+                text1: 'Time: ',
+                text2: DateFormat.jm().format(action.actionTime)),
             const SizedBox(
               height: 12,
             ),
@@ -50,33 +58,33 @@ class ActionDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Activity: ', text2: 'Follow Up'),
+            TextRow(text1: 'Activity: ', text2: action.activityType),
             const SizedBox(
               height: 12,
             ),
-            Container(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Meeting Link:  ',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  Container(
-                    width: Get.size.width / 1.5,
-                    child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                      maxLines: 3,
-                      style: textStyle14500.copyWith(color: greytextColor),
-                    ),
-                  )
-                ],
-              ),
-            ),
+            // Container(
+            //   child: Row(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       const Text(
+            //         'Meeting Link:  ',
+            //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            //       ),
+            //       Container(
+            //         width: Get.size.width / 1.5,
+            //         child: Text(
+            //           'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            //           maxLines: 3,
+            //           style: textStyle14500.copyWith(color: greytextColor),
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Action Type: ', text2: 'Reward'),
+            TextRow(text1: 'Action Type: ', text2: action.actionType),
             const SizedBox(
               height: 12,
             ),
@@ -91,7 +99,7 @@ class ActionDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.5,
                     child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                      action.description,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -102,7 +110,7 @@ class ActionDetailPage extends StatelessWidget {
             const SizedBox(
               height: 12,
             ),
-            const TextRow(text1: 'Action Outcome Type: ', text2: 'Fair Imp'),
+            TextRow(text1: 'Action Outcome Type: ', text2: action.outcomeType),
             const SizedBox(
               height: 12,
             ),
@@ -117,7 +125,7 @@ class ActionDetailPage extends StatelessWidget {
                   Container(
                     width: Get.size.width / 1.56,
                     child: Text(
-                      'Outcome details: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                      action.outcomeDetails,
                       maxLines: 3,
                       style: textStyle14500.copyWith(color: greytextColor),
                     ),
@@ -128,41 +136,41 @@ class ActionDetailPage extends StatelessWidget {
             const SizedBox(
               height: 30,
             ),
-            const Text(
-              'Attachments:  ',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              ],
-            ),
+            // const Text(
+            //   'Attachments:  ',
+            //   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            // ),
+            // Row(
+            //   children: [
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //     const SizedBox(
+            //       width: 10,
+            //     ),
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //     const SizedBox(
+            //       width: 10,
+            //     ),
+            //     Container(
+            //       width: 60,
+            //       height: 60,
+            //       decoration: BoxDecoration(
+            //           color: Colors.amber,
+            //           borderRadius: BorderRadius.circular(10)),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(
               height: 30,
             ),

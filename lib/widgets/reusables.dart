@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:halmstad/constants/colors.dart';
 import 'package:halmstad/models/interactionModel.dart';
+import 'package:halmstad/models/meetingModel.dart';
+import 'package:halmstad/models/memberModel.dart';
+import 'package:halmstad/models/requestModel.dart';
 import 'package:intl/intl.dart';
+import 'package:halmstad/models/actionModel.dart' as actionModel;
 
 // ignore: must_be_immutable
 class InteractionItem extends StatelessWidget {
@@ -38,10 +42,10 @@ class InteractionItem extends StatelessWidget {
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  title: const Text("Headline", style: textStyle14500),
-                  subtitle: const Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                      style: textStyle12400),
+                  title:
+                      Text(interaction.interationTitle, style: textStyle14500),
+                  subtitle:
+                      Text(interaction.interationDes, style: textStyle12400),
                   trailing: const Icon(Icons.more_vert_rounded),
                 ),
                 const SizedBox(
@@ -52,7 +56,7 @@ class InteractionItem extends StatelessWidget {
                     const Text('Dated: ', style: textStyle14500),
                     Text(
                       DateFormat('dd MMM yyyy')
-                          .format(interaction.activityTime!),
+                          .format(interaction.activityTime),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -64,7 +68,7 @@ class InteractionItem extends StatelessWidget {
                   children: [
                     const Text('Focus Area: ', style: textStyle14500),
                     Text(
-                      interaction.focusArea!.title!,
+                      interaction.focusArea.title,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -80,7 +84,7 @@ class InteractionItem extends StatelessWidget {
                           TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                     Text(
-                      interaction.group!.members!.length.toString(),
+                      interaction.group.members!.length.toString(),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -100,7 +104,7 @@ class InteractionItem extends StatelessWidget {
                       Container(
                         width: Get.size.width / 1.45,
                         child: Text(
-                          'interaction.',
+                          interaction.location.address,
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),
@@ -143,7 +147,8 @@ class TextRow extends StatelessWidget {
 
 // ignore: must_be_immutable
 class MeetingItem extends StatelessWidget {
-  MeetingItem({super.key, this.onTap});
+  final Meeting meeting;
+  MeetingItem({super.key, required this.meeting, this.onTap});
 
   VoidCallback? onTap;
 
@@ -174,10 +179,8 @@ class MeetingItem extends StatelessWidget {
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  title: const Text("Meeting Type", style: textStyle14500),
-                  subtitle: const Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                      style: textStyle12400),
+                  title: const Text('MEETING', style: textStyle14500),
+                  subtitle: Text(meeting.notes, style: textStyle12400),
                   trailing: const Icon(Icons.more_vert_rounded),
                 ),
                 const SizedBox(
@@ -187,7 +190,7 @@ class MeetingItem extends StatelessWidget {
                   children: [
                     const Text('Time: ', style: textStyle14500),
                     Text(
-                      '11:22 PM',
+                      DateFormat.jm().format(meeting.activityTime),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -199,7 +202,7 @@ class MeetingItem extends StatelessWidget {
                   children: [
                     const Text('Date: ', style: textStyle14500),
                     Text(
-                      '22 Mar 2024',
+                      DateFormat('dd MMM yyyy').format(meeting.activityTime),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -211,7 +214,7 @@ class MeetingItem extends StatelessWidget {
                   children: [
                     const Text('Participants: ', style: textStyle14500),
                     Text(
-                      '5',
+                      meeting.group.members.length.toString(),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -231,7 +234,7 @@ class MeetingItem extends StatelessWidget {
                       Container(
                         width: Get.size.width / 1.45,
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                          meeting.detailedAddress,
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),
@@ -457,7 +460,8 @@ class SmartLifePrimaryButton extends StatelessWidget {
 
 // ignore: must_be_immutable
 class MeetingVisitItem extends StatelessWidget {
-  MeetingVisitItem({super.key, this.onTap});
+  final RequestModel request;
+  MeetingVisitItem({super.key, required this.request, this.onTap});
 
   VoidCallback? onTap;
 
@@ -488,10 +492,8 @@ class MeetingVisitItem extends StatelessWidget {
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  title: const Text("Meeting Type", style: textStyle14500),
-                  subtitle: const Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                      style: textStyle12400),
+                  title: Text(request.requestType, style: textStyle14500),
+                  subtitle: Text(request.notes, style: textStyle12400),
                   trailing: const Icon(Icons.more_vert_rounded),
                 ),
                 const SizedBox(
@@ -501,7 +503,7 @@ class MeetingVisitItem extends StatelessWidget {
                   children: [
                     const Text('Time: ', style: textStyle14500),
                     Text(
-                      '11:22 PM',
+                      DateFormat.jm().format(request.time),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -513,7 +515,7 @@ class MeetingVisitItem extends StatelessWidget {
                   children: [
                     const Text('Date: ', style: textStyle14500),
                     Text(
-                      '22 Mar 2024',
+                      DateFormat('dd MMM yyyy').format(request.time),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -525,7 +527,7 @@ class MeetingVisitItem extends StatelessWidget {
                   children: [
                     const Text('Urgency: ', style: textStyle14500),
                     Text(
-                      'Urgent',
+                      request.urgency,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -537,7 +539,7 @@ class MeetingVisitItem extends StatelessWidget {
                   children: [
                     const Text('Status: ', style: textStyle14500),
                     Text(
-                      'Resolved',
+                      request.status,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -557,7 +559,7 @@ class MeetingVisitItem extends StatelessWidget {
                       Container(
                         width: Get.size.width / 1.45,
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                          request.detailedAddress,
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),
@@ -576,7 +578,8 @@ class MeetingVisitItem extends StatelessWidget {
 
 // ignore: must_be_immutable
 class TipItem extends StatelessWidget {
-  TipItem({super.key, this.onTap});
+  final RequestModel tip;
+  TipItem({super.key, required this.tip, this.onTap});
 
   VoidCallback? onTap;
 
@@ -607,10 +610,8 @@ class TipItem extends StatelessWidget {
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  title: const Text("Tip", style: textStyle14500),
-                  subtitle: const Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                      style: textStyle12400),
+                  title: Text(tip.requestType, style: textStyle14500),
+                  subtitle: Text(tip.notes, style: textStyle12400),
                   trailing: const Icon(Icons.more_vert_rounded),
                 ),
                 const SizedBox(
@@ -620,7 +621,7 @@ class TipItem extends StatelessWidget {
                   children: [
                     const Text('Time: ', style: textStyle14500),
                     Text(
-                      '11:22 PM',
+                      DateFormat.jm().format(tip.time),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -632,7 +633,7 @@ class TipItem extends StatelessWidget {
                   children: [
                     const Text('Date: ', style: textStyle14500),
                     Text(
-                      '22 Mar 2024',
+                      DateFormat('dd MMM yyyy').format(tip.time),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -644,7 +645,7 @@ class TipItem extends StatelessWidget {
                   children: [
                     const Text('Urgency: ', style: textStyle14500),
                     Text(
-                      'Urgent',
+                      tip.urgency,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -656,7 +657,7 @@ class TipItem extends StatelessWidget {
                   children: [
                     const Text('Status: ', style: textStyle14500),
                     Text(
-                      'Resolved',
+                      tip.status,
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -676,7 +677,7 @@ class TipItem extends StatelessWidget {
                       Container(
                         width: Get.size.width / 1.45,
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                          tip.detailedAddress,
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),
@@ -695,8 +696,8 @@ class TipItem extends StatelessWidget {
 
 // ignore: must_be_immutable
 class ActionItem extends StatelessWidget {
-  ActionItem({super.key, this.onTap});
-
+  ActionItem({super.key, this.onTap, required this.action});
+  final actionModel.Action action;
   VoidCallback? onTap;
 
   @override
@@ -726,10 +727,8 @@ class ActionItem extends StatelessWidget {
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  title: const Text("Action Type", style: textStyle14500),
-                  subtitle: const Text(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                      style: textStyle12400),
+                  title: Text(action.actionType, style: textStyle14500),
+                  subtitle: Text(action.description, style: textStyle12400),
                   trailing: const Icon(Icons.more_vert_rounded),
                 ),
                 const SizedBox(
@@ -739,7 +738,7 @@ class ActionItem extends StatelessWidget {
                   children: [
                     const Text('Time: ', style: textStyle14500),
                     Text(
-                      '11:22 PM',
+                      DateFormat.jm().format(action.actionTime),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -751,7 +750,7 @@ class ActionItem extends StatelessWidget {
                   children: [
                     const Text('Date: ', style: textStyle14500),
                     Text(
-                      '22 Mar 2024',
+                      DateFormat('dd MMM yyyy').format(action.actionTime),
                       style: textStyle14500.copyWith(color: greytextColor),
                     )
                   ],
@@ -764,14 +763,14 @@ class ActionItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Location:  ',
+                        'Outcome:  ',
                         style: TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       Container(
-                        width: Get.size.width / 1.45,
+                        width: Get.size.width / 1.47,
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                          action.outcomeDetails,
                           maxLines: 3,
                           style: textStyle14500.copyWith(color: greytextColor),
                         ),

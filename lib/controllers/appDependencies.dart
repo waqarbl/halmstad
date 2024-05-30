@@ -5,7 +5,7 @@ import 'package:halmstad/controllers/my_app_controller.dart';
 class MyAppDependencies extends Bindings {
   @override
   void dependencies() {
-    Get.put(MyAppController());
     Get.put(EnumsController());
+    Get.put(MyAppController());
   }
 }
